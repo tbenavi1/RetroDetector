@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example Dataset &mdash; RetroDetector 0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Usage" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> RetroDetector
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example Dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#drosophila-yakuba">Drosophila yakuba</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">RetroDetector</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Example Dataset</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="example-dataset">
+<h1>Example Dataset<a class="headerlink" href="#example-dataset" title="Permalink to this heading"></a></h1>
+<section id="drosophila-yakuba">
+<h2>Drosophila yakuba<a class="headerlink" href="#drosophila-yakuba" title="Permalink to this heading"></a></h2>
+<p>In this example, we run the entire RetroDetector pipeline on nine <em>Drosophila yakuba</em> samples from the Island of Mayotte. Each sample has paired-end Illumina and PacBio HiFi sequencing data. The first step is to download the necessary reference files:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir Reference</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_genomic.fna.gz -O Reference/ncbi_dyak.genomic.fna.gz</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_genomic.gtf.gz -O Reference/ncbi_dyak.genomic.gtf.gz</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_rna_from_genomic.fna.gz -O Reference/ncbi_dyak.rna_from_genomic.fna.gz</span>
+</pre></div>
+</div>
+<p>The next step is to download the short-read paired-end sequencing data. Make sure you have <a class="reference external" href="https://github.com/ncbi/sra-tools">sra-tools</a> installed. If you need more assistance please follow the instructions <a class="reference external" href="https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump">here</a>.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir FASTQS</span>
+<span class="go">prefetch SRR001</span>
+<span class="go">prefetch SRR002</span>
+<span class="go">prefetch SRR003</span>
+<span class="go">prefetch SRR004</span>
+<span class="go">prefetch SRR005</span>
+<span class="go">prefetch SRR006</span>
+<span class="go">prefetch SRR007</span>
+<span class="go">prefetch SRR008</span>
+<span class="go">prefetch SRR009</span>
+
+<span class="go">fasterq-dump SRR001 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR002 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR003 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR004 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR005 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR006 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR007 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR008 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR009 --outdir FASTQS</span>
+</pre></div>
+</div>
+<p>The next step is to download the long-read sequencing data:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">prefetch SRR001</span>
+<span class="go">prefetch SRR002</span>
+<span class="go">prefetch SRR003</span>
+<span class="go">prefetch SRR004</span>
+<span class="go">prefetch SRR005</span>
+<span class="go">prefetch SRR006</span>
+<span class="go">prefetch SRR007</span>
+<span class="go">prefetch SRR008</span>
+<span class="go">prefetch SRR009</span>
+
+<span class="go">fasterq-dump SRR001 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR002 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR003 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR004 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR005 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR006 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR007 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR008 --outdir FASTQS</span>
+<span class="go">fasterq-dump SRR009 --outdir FASTQS</span>
+</pre></div>
+</div>
+<p>The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. For this example, you can download config.yaml or copy the following:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ref:</span>
+<span class="go">  ncbi_dyak:</span>
+<span class="go">    genomic_fna: Reference/ncbi_dyak.genomic.fna.gz</span>
+<span class="go">    genomic_gtf: Reference/ncbi_dyak.genomic.gtf.gz</span>
+<span class="go">    rna_from_genomic: Reference/ncbi_dyak.rna_from_genomic.fna.gz</span>
+
+<span class="go">fastqs:</span>
+<span class="go">  short_paired_end:</span>
+<span class="go">    BE_1:</span>
+<span class="go">      1: [FASTQS/BE_1_R1.fastq.gz, FASTQS/BE_1_R2.fastq.gz]</span>
+<span class="go">    BE_13:</span>
+<span class="go">      1: [FASTQS/BE_13_R1.fastq.gz, FASTQS/BE_13_R2.fastq.gz]</span>
+<span class="go">    BE_18:</span>
+<span class="go">      1: [FASTQS/BE_18_R1.fastq.gz, FASTQS/BE_18_R2.fastq.gz]</span>
+<span class="go">    BE_8:</span>
+<span class="go">      1: [FASTQS/BE_8_R1.fastq.gz, FASTQS/BE_8_R2.fastq.gz]</span>
+<span class="go">    MTS_22:</span>
+<span class="go">      1: [FASTQS/MTS_22_R1.fastq.gz, FASTQS/MTS_22_R2.fastq.gz]</span>
+<span class="go">    MTS_25:</span>
+<span class="go">      1: [FASTQS/MTS_25_R1.fastq.gz, FASTQS/MTS_25_R2.fastq.gz]</span>
+<span class="go">    MTS_26:</span>
+<span class="go">      1: [FASTQS/MTS_26_R1.fastq.gz, FASTQS/MTS_26_R2.fastq.gz]</span>
+<span class="go">    SOU_15:</span>
+<span class="go">      1: [FASTQS/SOU_15_R1.fastq.gz, FASTQS/SOU_15_R2.fastq.gz]</span>
+<span class="go">    SOU_9:</span>
+<span class="go">      1: [FASTQS/SOU_9_R1.fastq.gz, FASTQS/SOU_9_R2.fastq.gz]</span>
+<span class="go">  long:</span>
+<span class="go">    BE_1:</span>
+<span class="go">      1: FASTQS/BE_1_long.fastq.gz</span>
+<span class="go">    BE_13:</span>
+<span class="go">      1: FASTQS/BE_13_long.fastq.gz</span>
+<span class="go">    BE_18:</span>
+<span class="go">      1: FASTQS/BE_18_long.fastq.gz</span>
+<span class="go">    BE_8:</span>
+<span class="go">      1: FASTQS/BE_8_long.fastq.gz</span>
+<span class="go">    MTS_22:</span>
+<span class="go">      1: FASTQS/MTS_22_long.fastq.gz</span>
+<span class="go">    MTS_25:</span>
+<span class="go">      1: FASTQS/MTS_25_long.fastq.gz</span>
+<span class="go">    MTS_26:</span>
+<span class="go">      1: FASTQS/MTS_26_long.fastq.gz</span>
+<span class="go">    SOU_15:</span>
+<span class="go">      1: FASTQS/SOU_15_long.fastq.gz</span>
+<span class="go">    SOU_9:</span>
+<span class="go">      1: FASTQS/SOU_9_long.fastq.gz</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, T. Rhyker Ranallo-Benavidez, James E. Titus-McQuillan, Rebekah L. Rogers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -26,4 +26,5 @@ Contents
 --------
 
 .. toctree::
-   usage
+   installation
+   example

@@ -62,7 +62,7 @@ The next step is to download the long-read sequencing data:
    fasterq-dump SRR008 --outdir FASTQS
    fasterq-dump SRR009 --outdir FASTQS
 
-The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. For this example, you can download config.yaml or copy the following:
+The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. For this example, you can download `config.yaml <https://raw.githubusercontent.com/tbenavi1/RetroDetector/main/example/config.yaml>`_ or copy the following code to a new file called config.yaml:
 
 .. code-block:: console
 

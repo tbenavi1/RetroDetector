@@ -28,3 +28,4 @@ Contents
 .. toctree::
    installation
    example
+   faqs

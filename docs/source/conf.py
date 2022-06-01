@@ -55,4 +55,4 @@ html_theme = 'sphinx_rtd_theme' #'alabaster'
 html_static_path = ['_static']
 
 #I added this on 2022-05-31 according to https://stackoverflow.com/questions/56336234/build-fail-sphinx-error-contents-rst-not-found
-master_doc = 'index'
+#master_doc = 'index'

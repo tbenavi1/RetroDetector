@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FAQs" href="faqs.html" />
-    <link rel="prev" title="Usage" href="installation.html" /> 
+    <link rel="prev" title="Configuration" href="config.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,9 +39,11 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation and Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Example Dataset</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#drosophila-yakuba">Drosophila yakuba</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#drosophila-melanogaster">Drosophila melanogaster</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQs</a></li>
@@ -73,106 +75,40 @@
              
   <section id="example-dataset">
 <h1>Example Dataset<a class="headerlink" href="#example-dataset" title="Permalink to this heading"></a></h1>
-<section id="drosophila-yakuba">
-<h2>Drosophila yakuba<a class="headerlink" href="#drosophila-yakuba" title="Permalink to this heading"></a></h2>
-<p>In this example, we run the entire RetroDetector pipeline on nine <em>Drosophila yakuba</em> samples from the Island of Mayotte. Each sample has paired-end Illumina and PacBio HiFi sequencing data. The first step is to download the necessary reference files:</p>
+<section id="drosophila-melanogaster">
+<h2>Drosophila melanogaster<a class="headerlink" href="#drosophila-melanogaster" title="Permalink to this heading"></a></h2>
+<p>In this example, we run the entire RetroDetector pipeline on a <em>Drosophila melanogaster</em> sample with Illumina paired-end and PacBio HiFi sequencing data. To begin, make a working directory and change into that directory. Please make sure to run all of the following code while you are in your working directory. The first step is to download the necessary reference files from NCBI:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir Reference</span>
-<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_genomic.fna.gz -O Reference/ncbi_dyak.genomic.fna.gz</span>
-<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_genomic.gtf.gz -O Reference/ncbi_dyak.genomic.gtf.gz</span>
-<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_rna_from_genomic.fna.gz -O Reference/ncbi_dyak.rna_from_genomic.fna.gz</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.fna.gz -O Reference/ncbi_dmel.genomic.fna.gz</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.gtf.gz -O Reference/ncbi_dmel.genomic.gtf.gz</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_rna_from_genomic.fna.gz -O Reference/ncbi_dmel.rna_from_genomic.fna.gz</span>
 </pre></div>
 </div>
-<p>The next step is to download the short-read paired-end sequencing data. Make sure you have <a class="reference external" href="https://github.com/ncbi/sra-tools">sra-tools</a> installed. If you need more assistance please follow the instructions <a class="reference external" href="https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump">here</a>.</p>
+<p>The next step is to download and gzip the sequencing data. Make sure you have <a class="reference external" href="https://github.com/ncbi/sra-tools">sra-tools</a> installed. If you need more assistance please follow the instructions for <a class="reference external" href="https://github.com/ncbi/sra-tools/wiki/01.-Downloading-SRA-Toolkit">downloading</a>, <a class="reference external" href="https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit">installing</a>, and using <a class="reference external" href="https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump">fasterq-dump</a>.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir FASTQS</span>
-<span class="go">prefetch SRR001</span>
-<span class="go">prefetch SRR002</span>
-<span class="go">prefetch SRR003</span>
-<span class="go">prefetch SRR004</span>
-<span class="go">prefetch SRR005</span>
-<span class="go">prefetch SRR006</span>
-<span class="go">prefetch SRR007</span>
-<span class="go">prefetch SRR008</span>
-<span class="go">prefetch SRR009</span>
-
-<span class="go">fasterq-dump SRR001 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR002 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR003 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR004 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR005 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR006 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR007 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR008 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR009 --outdir FASTQS</span>
+<span class="go">prefetch SRR10238607 --max-size 21G</span>
+<span class="go">fasterq-dump SRR10238607 --outdir FASTQS</span>
+<span class="go">gzip FASTQS/SRR10238607.fastq</span>
+<span class="go">prefetch SRR10728584</span>
+<span class="go">fasterq-dump SRR10728584 --outdir FASTQS</span>
+<span class="go">gzip FASTQS/SRR10728584_1.fastq</span>
+<span class="go">gzip FASTQS/SRR10728584_2.fastq</span>
 </pre></div>
 </div>
-<p>The next step is to download the long-read sequencing data:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">prefetch SRR001</span>
-<span class="go">prefetch SRR002</span>
-<span class="go">prefetch SRR003</span>
-<span class="go">prefetch SRR004</span>
-<span class="go">prefetch SRR005</span>
-<span class="go">prefetch SRR006</span>
-<span class="go">prefetch SRR007</span>
-<span class="go">prefetch SRR008</span>
-<span class="go">prefetch SRR009</span>
-
-<span class="go">fasterq-dump SRR001 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR002 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR003 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR004 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR005 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR006 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR007 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR008 --outdir FASTQS</span>
-<span class="go">fasterq-dump SRR009 --outdir FASTQS</span>
-</pre></div>
-</div>
-<p>The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. For this example, you can download <a class="reference external" href="https://raw.githubusercontent.com/tbenavi1/RetroDetector/main/example/config.yaml">config.yaml</a> or copy the following code to a new file called config.yaml:</p>
+<p>The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. For this example, you can download <a class="reference external" href="https://raw.githubusercontent.com/tbenavi1/RetroDetector/main/example/config.yaml">config.yaml</a> to your working directory, or you can copy the following code to a new file in your working directory called config.yaml:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ref:</span>
-<span class="go">  ncbi_dyak:</span>
-<span class="go">    genomic_fna: Reference/ncbi_dyak.genomic.fna.gz</span>
-<span class="go">    genomic_gtf: Reference/ncbi_dyak.genomic.gtf.gz</span>
-<span class="go">    rna_from_genomic: Reference/ncbi_dyak.rna_from_genomic.fna.gz</span>
+<span class="go">  ncbi_dmel:</span>
+<span class="go">    genomic_fna: Reference/ncbi_dmel.genomic.fna.gz</span>
+<span class="go">    genomic_gtf: Reference/ncbi_dmel.genomic.gtf.gz</span>
+<span class="go">    rna_from_genomic: Reference/ncbi_dmel.rna_from_genomic.fna.gz</span>
 
 <span class="go">fastqs:</span>
 <span class="go">  short_paired_end:</span>
-<span class="go">    BE_1:</span>
-<span class="go">      1: [FASTQS/BE_1_R1.fastq.gz, FASTQS/BE_1_R2.fastq.gz]</span>
-<span class="go">    BE_13:</span>
-<span class="go">      1: [FASTQS/BE_13_R1.fastq.gz, FASTQS/BE_13_R2.fastq.gz]</span>
-<span class="go">    BE_18:</span>
-<span class="go">      1: [FASTQS/BE_18_R1.fastq.gz, FASTQS/BE_18_R2.fastq.gz]</span>
-<span class="go">    BE_8:</span>
-<span class="go">      1: [FASTQS/BE_8_R1.fastq.gz, FASTQS/BE_8_R2.fastq.gz]</span>
-<span class="go">    MTS_22:</span>
-<span class="go">      1: [FASTQS/MTS_22_R1.fastq.gz, FASTQS/MTS_22_R2.fastq.gz]</span>
-<span class="go">    MTS_25:</span>
-<span class="go">      1: [FASTQS/MTS_25_R1.fastq.gz, FASTQS/MTS_25_R2.fastq.gz]</span>
-<span class="go">    MTS_26:</span>
-<span class="go">      1: [FASTQS/MTS_26_R1.fastq.gz, FASTQS/MTS_26_R2.fastq.gz]</span>
-<span class="go">    SOU_15:</span>
-<span class="go">      1: [FASTQS/SOU_15_R1.fastq.gz, FASTQS/SOU_15_R2.fastq.gz]</span>
-<span class="go">    SOU_9:</span>
-<span class="go">      1: [FASTQS/SOU_9_R1.fastq.gz, FASTQS/SOU_9_R2.fastq.gz]</span>
+<span class="go">    ISO1:</span>
+<span class="go">      1: [FASTQS/SRR10728584_1.fastq.gz, FASTQS/SRR10728584_2.fastq.gz]</span>
 <span class="go">  long:</span>
-<span class="go">    BE_1:</span>
-<span class="go">      1: FASTQS/BE_1_long.fastq.gz</span>
-<span class="go">    BE_13:</span>
-<span class="go">      1: FASTQS/BE_13_long.fastq.gz</span>
-<span class="go">    BE_18:</span>
-<span class="go">      1: FASTQS/BE_18_long.fastq.gz</span>
-<span class="go">    BE_8:</span>
-<span class="go">      1: FASTQS/BE_8_long.fastq.gz</span>
-<span class="go">    MTS_22:</span>
-<span class="go">      1: FASTQS/MTS_22_long.fastq.gz</span>
-<span class="go">    MTS_25:</span>
-<span class="go">      1: FASTQS/MTS_25_long.fastq.gz</span>
-<span class="go">    MTS_26:</span>
-<span class="go">      1: FASTQS/MTS_26_long.fastq.gz</span>
-<span class="go">    SOU_15:</span>
-<span class="go">      1: FASTQS/SOU_15_long.fastq.gz</span>
-<span class="go">    SOU_9:</span>
-<span class="go">      1: FASTQS/SOU_9_long.fastq.gz</span>
+<span class="go">    ISO1:</span>
+<span class="go">      1: FASTQS/SRR10238607.fastq.gz</span>
 </pre></div>
 </div>
 </section>
@@ -182,7 +118,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="installation.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-left" title="Configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="faqs.html" class="btn btn-neutral float-right" title="FAQs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

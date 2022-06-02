@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FAQs &mdash; RetroDetector 0.1 documentation</title>
+  <title>Configuration &mdash; RetroDetector 0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,7 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Example Dataset" href="example.html" /> 
+    <link rel="next" title="Example Dataset" href="example.html" />
+    <link rel="prev" title="Installation and Dependencies" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,12 +41,9 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="start.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation and Dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example Dataset</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">FAQs</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#what-do-i-do-if-i-have-more-than-one-set-of-short-read-fastq-files-or-more-than-one-long-read-fastq-file-for-a-given-sample">What do I do if I have more than one set of short-read FASTQ files or more than one long-read FASTQ file for a given sample?</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQs</a></li>
 </ul>
 
         </div>
@@ -62,9 +60,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>FAQs</li>
+      <li>Configuration</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/faqs.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/config.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -72,31 +70,16 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="faqs">
-<h1>FAQs<a class="headerlink" href="#faqs" title="Permalink to this heading"></a></h1>
-<section id="what-do-i-do-if-i-have-more-than-one-set-of-short-read-fastq-files-or-more-than-one-long-read-fastq-file-for-a-given-sample">
-<h2>What do I do if I have more than one set of short-read FASTQ files or more than one long-read FASTQ file for a given sample?<a class="headerlink" href="#what-do-i-do-if-i-have-more-than-one-set-of-short-read-fastq-files-or-more-than-one-long-read-fastq-file-for-a-given-sample" title="Permalink to this heading"></a></h2>
-<p>All you need to do is to adjust the config.yaml file accordingly. For example, if you have two sets of short-read FASTQ files and three long-read FASTQ files for sample1, then the fastqs section of config.yaml would look something like this:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">fastqs:</span>
-<span class="go">  short_paired_end:</span>
-<span class="go">    sample1:</span>
-<span class="go">      1: [sample1_short1_R1.fastq, sample1_short1_R2.fastq]</span>
-<span class="go">      2: [sample1_short2_R1.fastq, sample1_short2_R2.fastq]</span>
-<span class="go">  long:</span>
-<span class="go">    sample1:</span>
-<span class="go">      1: sample1_long1.fastq</span>
-<span class="go">      2: sample1_long2.fastq</span>
-<span class="go">      3: sample1_long3.fastq</span>
-</pre></div>
-</div>
-</section>
+  <section id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading"></a></h1>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="example.html" class="btn btn-neutral float-left" title="Example Dataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation and Dependencies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example.html" class="btn btn-neutral float-right" title="Example Dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

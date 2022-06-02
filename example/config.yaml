@@ -1,45 +1,13 @@
 ref:
-  ncbi_dyak:
-    genomic_fna: Reference/ncbi_dyak.genomic.fna.gz
-    genomic_gtf: Reference/ncbi_dyak.genomic.gtf.gz
-    rna_from_genomic: Reference/ncbi_dyak.rna_from_genomic.fna.gz
+  ncbi_dmel:
+    genomic_fna: Reference/ncbi_dmel.genomic.fna.gz
+    genomic_gtf: Reference/ncbi_dmel.genomic.gtf.gz
+    rna_from_genomic: Reference/ncbi_dmel.rna_from_genomic.fna.gz
 
 fastqs:
   short_paired_end:
-    BE_1:
-      1: [FASTQS/BE_1_R1.fastq.gz, FASTQS/BE_1_R2.fastq.gz]
-    BE_13:
-      1: [FASTQS/BE_13_R1.fastq.gz, FASTQS/BE_13_R2.fastq.gz]
-    BE_18:
-      1: [FASTQS/BE_18_R1.fastq.gz, FASTQS/BE_18_R2.fastq.gz]
-    BE_8:
-      1: [FASTQS/BE_8_R1.fastq.gz, FASTQS/BE_8_R2.fastq.gz]
-    MTS_22:
-      1: [FASTQS/MTS_22_R1.fastq.gz, FASTQS/MTS_22_R2.fastq.gz]
-    MTS_25:
-      1: [FASTQS/MTS_25_R1.fastq.gz, FASTQS/MTS_25_R2.fastq.gz]
-    MTS_26:
-      1: [FASTQS/MTS_26_R1.fastq.gz, FASTQS/MTS_26_R2.fastq.gz]
-    SOU_15:
-      1: [FASTQS/SOU_15_R1.fastq.gz, FASTQS/SOU_15_R2.fastq.gz]
-    SOU_9:
-      1: [FASTQS/SOU_9_R1.fastq.gz, FASTQS/SOU_9_R2.fastq.gz]
+    ISO1:
+      1: [FASTQS/SRR10728584_1.fastq.gz, FASTQS/SRR10728584_2.fastq.gz]
   long:
-    BE_1:
-      1: FASTQS/BE_1_long.fastq.gz
-    BE_13:
-      1: FASTQS/BE_13_long.fastq.gz
-    BE_18:
-      1: FASTQS/BE_18_long.fastq.gz
-    BE_8:
-      1: FASTQS/BE_8_long.fastq.gz
-    MTS_22:
-      1: FASTQS/MTS_22_long.fastq.gz
-    MTS_25:
-      1: FASTQS/MTS_25_long.fastq.gz
-    MTS_26:
-      1: FASTQS/MTS_26_long.fastq.gz
-    SOU_15:
-      1: FASTQS/SOU_15_long.fastq.gz
-    SOU_9:
-      1: FASTQS/SOU_9_long.fastq.gz
+    ISO1:
+      1: FASTQS/SRR10238607.fastq.gz

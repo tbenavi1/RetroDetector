@@ -1,113 +1,45 @@
 Example Dataset
 ===============
 
-Drosophila yakuba
------------------
+Drosophila melanogaster
+-----------------------
 
-In this example, we run the entire RetroDetector pipeline on nine *Drosophila yakuba* samples from the Island of Mayotte. Each sample has paired-end Illumina and PacBio HiFi sequencing data. The first step is to download the necessary reference files:
+In this example, we run the entire RetroDetector pipeline on a *Drosophila melanogaster* sample with Illumina paired-end and PacBio HiFi sequencing data. To begin, make a working directory and change into that directory. Please make sure to run all of the following code while you are in your working directory. The first step is to download the necessary reference files from NCBI:
 
 .. code-block:: console
    
    mkdir Reference
-   wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_genomic.fna.gz -O Reference/ncbi_dyak.genomic.fna.gz
-   wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_genomic.gtf.gz -O Reference/ncbi_dyak.genomic.gtf.gz
-   wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/016/746/365/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1/GCF_016746365.2_Prin_Dyak_Tai18E2_2.1_rna_from_genomic.fna.gz -O Reference/ncbi_dyak.rna_from_genomic.fna.gz
+   wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.fna.gz -O Reference/ncbi_dmel.genomic.fna.gz
+   wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.gtf.gz -O Reference/ncbi_dmel.genomic.gtf.gz
+   wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_rna_from_genomic.fna.gz -O Reference/ncbi_dmel.rna_from_genomic.fna.gz
 
-The next step is to download the short-read paired-end sequencing data. Make sure you have `sra-tools <https://github.com/ncbi/sra-tools>`_ installed. If you need more assistance please follow the instructions `here <https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump>`_.
+The next step is to download and gzip the sequencing data. Make sure you have `sra-tools <https://github.com/ncbi/sra-tools>`_ installed. If you need more assistance please follow the instructions for `downloading <https://github.com/ncbi/sra-tools/wiki/01.-Downloading-SRA-Toolkit>`_, `installing <https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit>`_, and using `fasterq-dump <https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump>`_.
 
 .. code-block:: console
 
    mkdir FASTQS
-   prefetch SRR001
-   prefetch SRR002
-   prefetch SRR003
-   prefetch SRR004
-   prefetch SRR005
-   prefetch SRR006
-   prefetch SRR007
-   prefetch SRR008
-   prefetch SRR009
-
-   fasterq-dump SRR001 --outdir FASTQS
-   fasterq-dump SRR002 --outdir FASTQS
-   fasterq-dump SRR003 --outdir FASTQS
-   fasterq-dump SRR004 --outdir FASTQS
-   fasterq-dump SRR005 --outdir FASTQS
-   fasterq-dump SRR006 --outdir FASTQS
-   fasterq-dump SRR007 --outdir FASTQS
-   fasterq-dump SRR008 --outdir FASTQS
-   fasterq-dump SRR009 --outdir FASTQS
+   prefetch SRR10238607 --max-size 21G
+   fasterq-dump SRR10238607 --outdir FASTQS
+   gzip FASTQS/SRR10238607.fastq
+   prefetch SRR10728584
+   fasterq-dump SRR10728584 --outdir FASTQS
+   gzip FASTQS/SRR10728584_1.fastq
+   gzip FASTQS/SRR10728584_2.fastq
  
-The next step is to download the long-read sequencing data:
-
-.. code-block:: console
-
-   prefetch SRR001
-   prefetch SRR002
-   prefetch SRR003
-   prefetch SRR004
-   prefetch SRR005
-   prefetch SRR006
-   prefetch SRR007
-   prefetch SRR008
-   prefetch SRR009
-
-   fasterq-dump SRR001 --outdir FASTQS
-   fasterq-dump SRR002 --outdir FASTQS
-   fasterq-dump SRR003 --outdir FASTQS
-   fasterq-dump SRR004 --outdir FASTQS
-   fasterq-dump SRR005 --outdir FASTQS
-   fasterq-dump SRR006 --outdir FASTQS
-   fasterq-dump SRR007 --outdir FASTQS
-   fasterq-dump SRR008 --outdir FASTQS
-   fasterq-dump SRR009 --outdir FASTQS
-
-The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. For this example, you can download `config.yaml <https://raw.githubusercontent.com/tbenavi1/RetroDetector/main/example/config.yaml>`_ or copy the following code to a new file called config.yaml:
+The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. For this example, you can download `config.yaml <https://raw.githubusercontent.com/tbenavi1/RetroDetector/main/example/config.yaml>`_ to your working directory, or you can copy the following code to a new file in your working directory called config.yaml:
 
 .. code-block:: console
 
    ref:
-     ncbi_dyak:
-       genomic_fna: Reference/ncbi_dyak.genomic.fna.gz
-       genomic_gtf: Reference/ncbi_dyak.genomic.gtf.gz
-       rna_from_genomic: Reference/ncbi_dyak.rna_from_genomic.fna.gz
+     ncbi_dmel:
+       genomic_fna: Reference/ncbi_dmel.genomic.fna.gz
+       genomic_gtf: Reference/ncbi_dmel.genomic.gtf.gz
+       rna_from_genomic: Reference/ncbi_dmel.rna_from_genomic.fna.gz
 
    fastqs:
      short_paired_end:
-       BE_1:
-         1: [FASTQS/BE_1_R1.fastq.gz, FASTQS/BE_1_R2.fastq.gz]
-       BE_13:
-         1: [FASTQS/BE_13_R1.fastq.gz, FASTQS/BE_13_R2.fastq.gz]
-       BE_18:
-         1: [FASTQS/BE_18_R1.fastq.gz, FASTQS/BE_18_R2.fastq.gz]
-       BE_8:
-         1: [FASTQS/BE_8_R1.fastq.gz, FASTQS/BE_8_R2.fastq.gz]
-       MTS_22:
-         1: [FASTQS/MTS_22_R1.fastq.gz, FASTQS/MTS_22_R2.fastq.gz]
-       MTS_25:
-         1: [FASTQS/MTS_25_R1.fastq.gz, FASTQS/MTS_25_R2.fastq.gz]
-       MTS_26:
-         1: [FASTQS/MTS_26_R1.fastq.gz, FASTQS/MTS_26_R2.fastq.gz]
-       SOU_15:
-         1: [FASTQS/SOU_15_R1.fastq.gz, FASTQS/SOU_15_R2.fastq.gz]
-       SOU_9:
-         1: [FASTQS/SOU_9_R1.fastq.gz, FASTQS/SOU_9_R2.fastq.gz]
+       ISO1:
+         1: [FASTQS/SRR10728584_1.fastq.gz, FASTQS/SRR10728584_2.fastq.gz]
      long:
-       BE_1:
-         1: FASTQS/BE_1_long.fastq.gz
-       BE_13:
-         1: FASTQS/BE_13_long.fastq.gz
-       BE_18:
-         1: FASTQS/BE_18_long.fastq.gz
-       BE_8:
-         1: FASTQS/BE_8_long.fastq.gz
-       MTS_22:
-         1: FASTQS/MTS_22_long.fastq.gz
-       MTS_25:
-         1: FASTQS/MTS_25_long.fastq.gz
-       MTS_26:
-         1: FASTQS/MTS_26_long.fastq.gz
-       SOU_15:
-         1: FASTQS/SOU_15_long.fastq.gz
-       SOU_9:
-         1: FASTQS/SOU_9_long.fastq.gz
+       ISO1:
+         1: FASTQS/SRR10238607.fastq.gz

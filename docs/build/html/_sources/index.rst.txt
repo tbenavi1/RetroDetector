@@ -26,6 +26,8 @@ Contents
 --------
 
 .. toctree::
+   start
    installation
+   config
    example
    faqs

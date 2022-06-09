@@ -78,37 +78,56 @@
 <section id="drosophila-melanogaster">
 <h2>Drosophila melanogaster<a class="headerlink" href="#drosophila-melanogaster" title="Permalink to this heading"></a></h2>
 <p>In this example, we run the entire RetroDetector pipeline on a <em>Drosophila melanogaster</em> sample with Illumina paired-end and PacBio HiFi sequencing data. To begin, make a working directory and change into that directory. Please make sure to run all of the following code while you are in your working directory. The first step is to download the necessary reference files from NCBI:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir Reference</span>
-<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.fna.gz -O Reference/ncbi_dmel.genomic.fna.gz</span>
-<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.gtf.gz -O Reference/ncbi_dmel.genomic.gtf.gz</span>
-<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_rna_from_genomic.fna.gz -O Reference/ncbi_dmel.rna_from_genomic.fna.gz</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir Downloads</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.fna.gz -O Downloads/ncbi_dmel.genomic.fna.gz</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.gtf.gz -O Downloads/ncbi_dmel.genomic.gtf.gz</span>
+<span class="go">wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_rna_from_genomic.fna.gz -O Downloads/ncbi_dmel.rna_from_genomic.fna.gz</span>
 </pre></div>
 </div>
 <p>The next step is to download and gzip the sequencing data. Make sure you have <a class="reference external" href="https://github.com/ncbi/sra-tools">sra-tools</a> installed. If you need more assistance please follow the instructions for <a class="reference external" href="https://github.com/ncbi/sra-tools/wiki/01.-Downloading-SRA-Toolkit">downloading</a>, <a class="reference external" href="https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit">installing</a>, and using <a class="reference external" href="https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump">fasterq-dump</a>.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir FASTQS</span>
-<span class="go">prefetch SRR10238607 --max-size 21G</span>
-<span class="go">fasterq-dump SRR10238607 --outdir FASTQS</span>
-<span class="go">gzip FASTQS/SRR10238607.fastq</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">prefetch SRR10238607 --max-size 21G</span>
+<span class="go">fasterq-dump SRR10238607 --outdir Downloads</span>
+<span class="go">gzip Downloads/SRR10238607.fastq</span>
 <span class="go">prefetch SRR10728584</span>
-<span class="go">fasterq-dump SRR10728584 --outdir FASTQS</span>
-<span class="go">gzip FASTQS/SRR10728584_1.fastq</span>
-<span class="go">gzip FASTQS/SRR10728584_2.fastq</span>
+<span class="go">fasterq-dump SRR10728584 --outdir Downloads</span>
+<span class="go">gzip Downloads/SRR10728584_1.fastq</span>
+<span class="go">gzip Downloads/SRR10728584_2.fastq</span>
 </pre></div>
 </div>
-<p>The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. For this example, you can download <a class="reference external" href="https://raw.githubusercontent.com/tbenavi1/RetroDetector/main/example/config.yaml">config.yaml</a> to your working directory, or you can copy the following code to a new file in your working directory called config.yaml:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ref:</span>
-<span class="go">  ncbi_dmel:</span>
-<span class="go">    genomic_fna: Reference/ncbi_dmel.genomic.fna.gz</span>
-<span class="go">    genomic_gtf: Reference/ncbi_dmel.genomic.gtf.gz</span>
-<span class="go">    rna_from_genomic: Reference/ncbi_dmel.rna_from_genomic.fna.gz</span>
-
-<span class="go">fastqs:</span>
-<span class="go">  short_paired_end:</span>
-<span class="go">    ISO1:</span>
-<span class="go">      1: [FASTQS/SRR10728584_1.fastq.gz, FASTQS/SRR10728584_2.fastq.gz]</span>
-<span class="go">  long:</span>
-<span class="go">    ISO1:</span>
-<span class="go">      1: FASTQS/SRR10238607.fastq.gz</span>
+<p>The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. If RetroDetector was installed at /user/software/RetroDetector, you would copy config.yaml to your working directory with the following command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cp /users/software/RetroDetector/example/config.yaml .</span>
+</pre></div>
+</div>
+<p>Now, you need edit config.yaml to add the scripts directory location from your RetroDetector installation. For example, if RetroDetector was installed at /user/software/RetroDetector, you would edit the scripts directory line of config.yaml as follows:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">scripts_directory: /user/software/RetroDetector/scripts</span>
+</pre></div>
+</div>
+<p>Next, copy Snakefile from your RetroDetector installation to your working directory. For example, if RetroDetector was installed at /user/software/RetroDetector and you are in your working directory, you would run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cp /user/software/RetroDetector/Snakefile .</span>
+</pre></div>
+</div>
+<p>Now you are ready to run RetroDetector. Activate your snakemake environment, and perform a dry run.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">conda activate snakemake</span>
+<span class="go">snakemake -n</span>
+</pre></div>
+</div>
+<p>If everything looks good, specify the number of available cores and run RetroDetector. For example, if your machine has 32 available cores, you would run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">snakemake --cores 32</span>
+</pre></div>
+</div>
+<p>Once the pipeline finishes running, the following files should be in the RESULTS folder:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">RESULTS</span>
+<span class="go">├── genome.fa</span>
+<span class="go">├── genome.fa.amb</span>
+<span class="go">├── genome.fa.ann</span>
+<span class="go">├── genome.fa.bwt</span>
+<span class="go">├── genome.fa.fai</span>
+<span class="go">├── genome.fa.pac</span>
+<span class="go">├── genome.fa.sa</span>
+<span class="go">└── samples</span>
+<span class="go">    ├── A.fastq</span>
+<span class="go">    ├── B.fastq</span>
+<span class="go">    └── C.fastq</span>
 </pre></div>
 </div>
 </section>

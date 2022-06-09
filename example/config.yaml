@@ -1,13 +1,17 @@
 ref:
   ncbi_dmel:
-    genomic_fna: Reference/ncbi_dmel.genomic.fna.gz
-    genomic_gtf: Reference/ncbi_dmel.genomic.gtf.gz
-    rna_from_genomic: Reference/ncbi_dmel.rna_from_genomic.fna.gz
+    genomic_fna: Downloads/ncbi_dmel.genomic.fna.gz
+    genomic_gtf: Downloads/ncbi_dmel.genomic.gtf.gz
+    rna_from_genomic: Downloads/ncbi_dmel.rna_from_genomic.fna.gz
 
 fastqs:
   short_paired_end:
     ISO1:
-      1: [FASTQS/SRR10728584_1.fastq.gz, FASTQS/SRR10728584_2.fastq.gz]
-  long:
+      1:
+        1: Downloads/SRR10728584_1.fastq.gz
+        2: Downloads/SRR10728584_2.fastq.gz
+  pacbio_hifi:
     ISO1:
-      1: FASTQS/SRR10238607.fastq.gz
+      1: Downloads/SRR10238607.fastq.gz
+
+scripts_directory:

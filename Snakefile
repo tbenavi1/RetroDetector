@@ -2,40 +2,34 @@ configfile: "config.yaml"
 
 def get_all_short_fastq(wildcards):
   files = []
-  for sample in config["fastqs"]["short_paired_end"]:
-    i_s = config["fastqs"]["short_paired_end"][sample]
-    for i in i_s:
-      file = f"FASTQS/{sample}/short_paired_end/{sample}.short.{i}.R1.fastq.gz"
-      files.append(file)
-      file = f"FASTQS/{sample}/short_paired_end/{sample}.short.{i}.R2.fastq.gz"
-      files.append(file)
+  for sample in config["fastqs"]:
+    if "short_paired_end" in config["fastqs"][sample]:
+      i_s = config["fastqs"][sample]["short_paired_end"]
+      for i in i_s:
+        file = f"FASTQS/{sample}/short_paired_end/{sample}.short.{i}.R1.fastq.gz"
+        files.append(file)
+        file = f"FASTQS/{sample}/short_paired_end/{sample}.short.{i}.R2.fastq.gz"
+        files.append(file)
   return files
 
-def get_all_hifi_fastq(wildcards):
+def get_all_long_fastq(wildcards):
   files = []
-  for sample in config["fastqs"]["pacbio_hifi"]:
-    i_s = config["fastqs"]["pacbio_hifi"][sample]
-    for i in i_s:
-      file = f"FASTQS/{sample}/pacbio_hifi/{sample}.pacbio_hifi.{i}.fastq.gz"
-      files.append(file)
-  return files
-
-def get_all_pb_fastq(wildcards):
-  files = []
-  for sample in config["fastqs"]["pacbio_clr"]:
-    i_s = config["fastqs"]["pacbio_clr"][sample]
-    for i in i_s:
-      file = f"FASTQS/{sample}/pacbio_clr/{sample}.pacbio_clr.{i}.fastq.gz"
-      files.append(file)
-  return files
-
-def get_all_ont_fastq(wildcards):
-  files = []
-  for sample in config["fastqs"]["ont"]:
-    i_s = config["fastqs"]["ont"][sample]
-    for i in i_s:
-      file = f"FASTQS/{sample}/ont/{sample}.ont.{i}.fastq.gz"
-      files.append(file)
+  for sample in config["fastqs"]:
+    if "pacbio_hifi" in config["fastqs"][sample]:
+      i_s = config["fastqs"][sample]["pacbio_hifi"]
+      for i in i_s:
+        file = f"FASTQS/{sample}/pacbio_hifi/{sample}.pacbio_hifi.{i}.fastq.gz"
+        files.append(file)
+    if "pacbio_clr" in config["fastqs"][sample]:
+      i_s = config["fastqs"][sample]["pacbio_clr"]
+      for i in i_s:
+        file = f"FASTQS/{sample}/pacbio_clr/{sample}.pacbio_clr.{i}.fastq.gz"
+        files.append(file)
+    if "ont" in config["fastqs"][sample]:
+      i_s = config["fastqs"][sammple]["ont"]
+      for i in i_s:
+        file = f"FASTQS/{sample}/ont/{sample}.ont.{i}.fastq.gz"
+        files.append(file)
   return files
 
 rule all:
@@ -51,7 +45,8 @@ rule all:
     #expand("Transcript/{ref}.transcript.coords.tsv", ref=config["ref"])
     #expand("Junctions/{ref}.shortregions.fasta", ref=config["ref"])
     #expand("Junctions/{ref}.longregions.fasta", ref=config["ref"])
-    expand("BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.sorted.bam", ref=config["ref"], sample=config["fastqs"]["short_paired_end"])
+    #expand("BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.sorted.bam", ref=config["ref"], sample=config["fastqs"])
+    expand("BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
 
 def get_genomic_fna(wildcards):
   return config["ref"][wildcards.ref]["genomic_fna"]
@@ -111,7 +106,7 @@ rule bgzip_rna_from_genomic:
     "bgzip {input}"
 
 def get_short_fastq(wildcards):
-  return config["fastqs"]["short_paired_end"][wildcards.sample][int(wildcards.i)][int(wildcards.j)]
+  return config["fastqs"][wildcards.sample]["short_paired_end"][int(wildcards.i)][int(wildcards.j)]
 
 rule link_short:
   input:
@@ -121,38 +116,16 @@ rule link_short:
   shell:
     "ln -sr {input} {output}"
 
-def get_hifi_fastq(wildcards):
-  return config["fastqs"]["pacbio_hifi"][wildcards.sample][int(wildcards.i)]
+def get_long_fastq(wildcards):
+	return config["fastqs"][wildcards.sample][wildcards.tech][int(wildcards.i)]
 
-rule link_hifi_fastq:
-  input:
-    get_hifi_fastq
-  output:
-    "FASTQS/{sample}/pacbio_hifi/{sample}.pacbio_hifi.{i}.fastq.gz"
-  shell:
-    "ln -sr {input} {output}"
-
-def get_pb_fastq(wildcards):
-  return config["fastqs"]["pacbio_clr"][wildcards.sample][int(wildcards.i)]
-
-rule link_pb_fastq:
-  input:
-    get_pb_fastq
-  output:
-    "FASTQS/{sample}/pacbio_clr/{sample}.pacbio_clr.{i}.fastq.gz"
-  shell:
-    "ln -sr {input} {output}"
-
-def get_ont_fastq(wildcards):
-  return config["fastqs"]["ont"][wildcards.sample][int(wildcards.i)]
-
-rule link_ont_fastq:
-  input:
-    get_ont_fastq
-  output:
-    "FASTQS/{sample}/ont/{sample}.ont.{i}.fastq.gz"
-  shell:
-    "ln -sr {input} {output}"
+rule link_long_fastq:
+	input:
+		get_long_fastq
+	output:
+		"FASTQS/{sample}/{tech}/{sample}.{tech}.{i}.fastq.gz"
+	shell:
+		"ln -sr {input} {output}"
 
 rule bwa_index_transcript:
   input:
@@ -170,7 +143,7 @@ rule minimap2_hifi_index_transcript:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
-    "Reference/{ref}.rna_from_genomic-hifi.mmi"
+    "Reference/{ref}.rna_from_genomic.pacbio_hifi.mmi"
   threads: 3
   shell:
     "minimap2 -x map-hifi -d {output} {input}"
@@ -179,7 +152,7 @@ rule minimap2_pb_index_transcript:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
-    "Reference/{ref}.rna_from_genomic-pb.mmi"
+    "Reference/{ref}.rna_from_genomic.pacbio_clr.mmi"
   threads: 3
   shell:
     "minimap2 -x map-pb -d {output} {input}"
@@ -188,7 +161,7 @@ rule minimap2_ont_index_transcript:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
-    "Reference/{ref}.rna_from_genomic-ont.mmi"
+    "Reference/{ref}.rna_from_genomic.ont.mmi"
   threads: 3
   shell:
     "minimap2 -x map-ont -d {output} {intput}"
@@ -240,7 +213,7 @@ rule bwa_aln_transcript:
     ref="Reference/{ref}.rna_from_genomic.fna.gz",
     reads="FASTQS/{sample}/short_paired_end/{sample}.short.{i}.R{j}.fastq.gz"
   output:
-    "BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.{i}.{j}.sai"
+    temp("BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.{i}.{j}.sai")
   threads: 16
   shell:
     "bwa aln -t {threads} {input.ref} {input.reads} > {output}"
@@ -277,10 +250,11 @@ rule sort_bam_short:
 
 def get_sorted_bam_short(wildcards):
   files = []
-  i_s = config["fastqs"]["short_paired_end"][wildcards.sample]
-  for i in i_s:
-    file = f"BAMS/{wildcards.ref}/{wildcards.sample}/short_paired_end/{wildcards.ref}.{wildcards.sample}.short.{i}.sorted.bam"
-    files.append(file)
+  if "short_paired_end" in config["fastqs"][wildcards.sample]:
+    i_s = config["fastqs"][wildcards.sample]["short_paired_end"]
+    for i in i_s:
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/short_paired_end/{wildcards.ref}.{wildcards.sample}.short.{i}.sorted.bam"
+      files.append(file)
   return files
 
 rule merge_bam_short:
@@ -291,3 +265,59 @@ rule merge_bam_short:
   threads: 16
   shell:
     "samtools merge -@ {threads} -o {output} {input}"
+
+rule minimap_transcript_long:
+	input:
+		mmi="Reference/{ref}.rna_from_genomic.{tech}.mmi",
+		reads="FASTQS/{sample}/{tech}/{sample}.{tech}.{i}.fastq.gz"
+	output:
+		temp("BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.sam")
+	threads: 15
+	shell:
+		"minimap2 -t {threads} -a {input.mmi} {input.reads} > {output}"
+
+rule sam_to_bam_transcript_long:
+	input:
+		"BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.sam"
+	output:
+		temp("BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.bam")
+	threads: 16
+	shell:
+		"samtools view -F 4 -@ {threads} -b -o {output} {input}"
+
+rule sort_bam_transcript_long:
+	input:
+		"BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.bam"
+	output:
+		temp("BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.sorted.bam")
+	threads: 16
+	shell:
+		"samtools sort -@ {threads} -o {output} {input}"
+
+def get_sorted_bam_transcript_long(wildcards):
+  files = []
+  if "pacbio_hifi" in config["fastqs"][wildcards.sample]:
+    i_s = config["fastqs"][wildcards.sample]["pacbio_hifi"]
+    for i in i_s:
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcript/pacbio_hifi/{wildcards.ref}.{wildcards.sample}.transcript.pacbio_hifi.{i}.sorted.bam"
+      files.append(file)
+  if "pacbio_clr" in config["fastqs"][wildcards.sample]:
+    i_s = config["fastqs"][wildcards.sample]["pacbio_clr"]
+    for i in i_s:
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcript/pacbio_clr/{wildcards.ref}.{wildcards.sample}.transcript.pacbio_clr.{i}.sorted.bam"
+      files.append(file)
+  if "ont" in config["fastqs"][wildcards.sample]:
+    i_s = config["fastqs"][wildcards.sample]["ont"]
+    for i in i_s:
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcript/ont/{wildcards.ref}.{wildcards.sample}.transcript.ont.{i}.sorted.bam"
+      files.append(file)
+  return files
+
+rule merge_bam_transcript_long:
+	input:
+		get_sorted_bam_transcript_long
+	output:
+		"BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam"
+	threads: 16
+	shell:
+		"samtools merge -@ {threads} -o {output} {input}"

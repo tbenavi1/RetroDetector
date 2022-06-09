@@ -5,13 +5,12 @@ ref:
     rna_from_genomic: Downloads/ncbi_dmel.rna_from_genomic.fna.gz
 
 fastqs:
-  short_paired_end:
-    ISO1:
+  ISO1:
+    short_paired_end:
       1:
         1: Downloads/SRR10728584_1.fastq.gz
         2: Downloads/SRR10728584_2.fastq.gz
-  pacbio_hifi:
-    ISO1:
+    pacbio_hifi:
       1: Downloads/SRR10238607.fastq.gz
 
-scripts_directory:
+scripts_directory: /nobackup/rogers_temp/Rhyker/RetroDetector/

@@ -46,7 +46,9 @@ rule all:
     #expand("Junctions/{ref}.shortregions.fasta", ref=config["ref"])
     #expand("Junctions/{ref}.longregions.fasta", ref=config["ref"])
     #expand("BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.sorted.bam", ref=config["ref"], sample=config["fastqs"])
-    expand("BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
+    #expand("BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
+    #expand("BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
+    expand("Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv", ref=config["ref"])
 
 def get_genomic_fna(wildcards):
   return config["ref"][wildcards.ref]["genomic_fna"]
@@ -162,6 +164,33 @@ rule minimap2_ont_index_transcript:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
     "Reference/{ref}.rna_from_genomic.ont.mmi"
+  threads: 3
+  shell:
+    "minimap2 -x map-ont -d {output} {intput}"
+
+rule minimap2_hifi_index_genome:
+  input:
+    "Reference/{ref}.genomic.fna.gz"
+  output:
+    "Reference/{ref}.genomic.pacbio_hifi.mmi"
+  threads: 3
+  shell:
+    "minimap2 -x map-hifi -d {output} {input}"
+
+rule minimap2_pb_index_genome:
+  input:
+    "Reference/{ref}.genomic.fna.gz"
+  output:
+    "Reference/{ref}.genomic.pacbio_clr.mmi"
+  threads: 3
+  shell:
+    "minimap2 -x map-pb -d {output} {input}"
+
+rule minimap2_ont_index_genome:
+  input:
+    "Reference/{ref}.genomic.fna.gz"
+  output:
+    "Reference/{ref}.genomic.ont.mmi"
   threads: 3
   shell:
     "minimap2 -x map-ont -d {output} {intput}"
@@ -321,3 +350,101 @@ rule merge_bam_transcript_long:
 	threads: 16
 	shell:
 		"samtools merge -@ {threads} -o {output} {input}"
+
+rule minimap_genome_long:
+	input:
+		mmi="Reference/{ref}.genomic.{tech}.mmi",
+		reads="FASTQS/{sample}/{tech}/{sample}.{tech}.{i}.fastq.gz"
+	output:
+		temp("BAMS/{ref}/{sample}/genome/{tech}/{ref}.{sample}.genome.{tech}.{i}.sam")
+	threads: 15
+	shell:
+		"minimap2 -t {threads} -a {input.mmi} {input.reads} > {output}"
+
+rule sam_to_bam_genome_long:
+	input:
+		"BAMS/{ref}/{sample}/genome/{tech}/{ref}.{sample}.genome.{tech}.{i}.sam"
+	output:
+		temp("BAMS/{ref}/{sample}/genome/{tech}/{ref}.{sample}.genome.{tech}.{i}.bam")
+	threads: 16
+	shell:
+		"samtools view -F 4 -@ {threads} -b -o {output} {input}"
+
+rule sort_bam_genome_long:
+	input:
+		"BAMS/{ref}/{sample}/genome/{tech}/{ref}.{sample}.genome.{tech}.{i}.bam"
+	output:
+		temp("BAMS/{ref}/{sample}/genome/{tech}/{ref}.{sample}.genome.{tech}.{i}.sorted.bam")
+	threads: 16
+	shell:
+		"samtools sort -@ {threads} -o {output} {input}"
+
+def get_sorted_bam_genome_long(wildcards):
+  files = []
+  if "pacbio_hifi" in config["fastqs"][wildcards.sample]:
+    i_s = config["fastqs"][wildcards.sample]["pacbio_hifi"]
+    for i in i_s:
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/genome/pacbio_hifi/{wildcards.ref}.{wildcards.sample}.genome.pacbio_hifi.{i}.sorted.bam"
+      files.append(file)
+  if "pacbio_clr" in config["fastqs"][wildcards.sample]:
+    i_s = config["fastqs"][wildcards.sample]["pacbio_clr"]
+    for i in i_s:
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/genome/pacbio_clr/{wildcards.ref}.{wildcards.sample}.genome.pacbio_clr.{i}.sorted.bam"
+      files.append(file)
+  if "ont" in config["fastqs"][wildcards.sample]:
+    i_s = config["fastqs"][wildcards.sample]["ont"]
+    for i in i_s:
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/genome/ont/{wildcards.ref}.{wildcards.sample}.genome.ont.{i}.sorted.bam"
+      files.append(file)
+  return files
+
+rule merge_bam_genome_long:
+	input:
+		get_sorted_bam_genome_long
+	output:
+		"BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam"
+	threads: 16
+	shell:
+		"samtools merge -@ {threads} -o {output} {input}"
+
+rule minimap2_junctionreads_to_transcript:
+	input:
+		mmi="Reference/{ref}.rna_from_genomic.pacbio_hifi.mmi",
+		reads="Junctions/{ref}.longregions.fasta"
+	output:
+		"BAMS/{ref}/junction/{ref}.junctionreads.long.transcript.sam"
+	threads: 15
+	shell:
+		"minimap2 --eqx -t {threads} -a {input.mmi} {input.reads} > {output}"
+
+rule find_junctionreads_alignments_long:
+  input:
+    junctions="Junctions/{ref}.junctions.tsv",
+    bam="BAMS/{ref}/junction/{ref}.junctionreads.long.transcript.sam"
+  output:
+    spanningalignments="Ambiguous/{ref}.ambiguous.long.spanningalignments.sam",
+    spannedjunctions="Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
+    flankregions="Flanks/{ref}/junction/{ref}.junction.flankregions.tsv"
+  shell:
+    "samtools view -h {input.bam} | python scripts/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
+
+rule remove_ambiguous_junctions_long:
+  input:
+    "Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
+    "Junctions/{ref}.junctions.tsv"
+  output:
+    "Junctions/{ref}.junctions.unambiguous.long.tsv"
+  script:
+    "scripts/remove_ambiguous_junctions.py"
+
+rule find_longreads_alignments:
+  input:
+    junctions="Junctions/{ref}.junctions.unambiguous.long.tsv",
+    bam="BAMS/{ref}/long/{ref}.{fastq}.longreads.transcript.sorted.bam"
+  output:
+    spanningalignments="Spanned/{ref}/long/{ref}.{fastq}.longreads.spanningalignments.sam",
+    spannedjunctions="Spanned/{ref}/long/{ref}.{fastq}.longreads.spannedjunctions.tsv",
+    flankregions="Flanks/{ref}/long/{ref}.{fastq}.longreads.flankregions.tsv"
+  shell:
+    "samtools view -h {input.bam} | python scripts/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
+

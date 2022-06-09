@@ -13,4 +13,4 @@ fastqs:
     pacbio_hifi:
       1: Downloads/SRR10238607.fastq.gz
 
-scripts_directory: /nobackup/rogers_temp/Rhyker/RetroDetector/
+scripts_directory:

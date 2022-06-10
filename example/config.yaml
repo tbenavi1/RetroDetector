@@ -14,3 +14,5 @@ fastqs:
       1: Downloads/SRR10238607.fastq.gz
 
 scripts_directory:
+
+read_threshold: 3

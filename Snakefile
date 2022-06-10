@@ -32,6 +32,16 @@ def get_all_long_fastq(wildcards):
         files.append(file)
   return files
 
+short_samples = []
+for sample in config["fastqs"]:
+  if "short_paired_end" in config["fastqs"][sample]:
+    short_samples.append(sample)
+
+long_samples = []
+for sample in config["fastqs"]:
+  if "pacbio_hifi" in config["fastqs"][sample] or "pacbio_clr" in config["fastqs"][sample] or "ont" in config["fastqs"][sample]:
+    long_samples.append(sample)
+
 rule all:
   input:
     #expand("Reference/{ref}.genomic.fna.gz", ref=config["ref"])
@@ -48,7 +58,13 @@ rule all:
     #expand("BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.sorted.bam", ref=config["ref"], sample=config["fastqs"])
     #expand("BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
     #expand("BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
-    expand("Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv", ref=config["ref"])
+    #expand("Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv", ref=config["ref"])
+    #expand("Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv", ref=config["ref"], sample=long_samples)
+    #expand("Summary/{ref}/long/{ref}.{sample}.longreads.numspannedjunctions.tsv", ref=config["ref"], sample=long_samples)
+    #expand("SFS/{ref}/long/{ref}.longreads.freqtable.tsv", ref=config["ref"])
+    #expand("Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt", ref=config["ref"], sample=long_samples)
+    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.bam", ref=config["ref"], sample=long_samples)
+    "GeneIDs/"
 
 def get_genomic_fna(wildcards):
   return config["ref"][wildcards.ref]["genomic_fna"]
@@ -425,8 +441,10 @@ rule find_junctionreads_alignments_long:
     spanningalignments="Ambiguous/{ref}.ambiguous.long.spanningalignments.sam",
     spannedjunctions="Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
     flankregions="Flanks/{ref}/junction/{ref}.junction.flankregions.tsv"
+  params:
+    scripts=get_scripts
   shell:
-    "samtools view -h {input.bam} | python scripts/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
+    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
 
 rule remove_ambiguous_junctions_long:
   input:
@@ -434,17 +452,115 @@ rule remove_ambiguous_junctions_long:
     "Junctions/{ref}.junctions.tsv"
   output:
     "Junctions/{ref}.junctions.unambiguous.long.tsv"
+  params:
+    scripts=get_scripts
   script:
-    "scripts/remove_ambiguous_junctions.py"
+    "{params.scripts}/remove_ambiguous_junctions.py"
 
 rule find_longreads_alignments:
   input:
     junctions="Junctions/{ref}.junctions.unambiguous.long.tsv",
-    bam="BAMS/{ref}/long/{ref}.{fastq}.longreads.transcript.sorted.bam"
+    bam="BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam"
   output:
-    spanningalignments="Spanned/{ref}/long/{ref}.{fastq}.longreads.spanningalignments.sam",
-    spannedjunctions="Spanned/{ref}/long/{ref}.{fastq}.longreads.spannedjunctions.tsv",
-    flankregions="Flanks/{ref}/long/{ref}.{fastq}.longreads.flankregions.tsv"
+    spanningalignments="Spanned/{ref}/long/{ref}.{sample}.longreads.spanningalignments.sam",
+    spannedjunctions="Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
+    flankregions="Flanks/{ref}/long/{ref}.{sample}.longreads.flankregions.tsv"
+  params:
+    scripts=get_scripts
   shell:
-    "samtools view -h {input.bam} | python scripts/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
+    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
 
+rule summarize_alignments_long:
+  input:
+    "Transcript/{ref}.transcript.coords.tsv",
+    "Junctions/{ref}.junctions.tsv",
+    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
+  output:
+    "Summary/{ref}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv",
+    "Summary/{ref}/long/{ref}.{sample}.longreads.numspannedjunctions.tsv"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/summarize_spanned_junctions.py"
+
+rule make_freqtable_long:
+  input:
+    expand("Summary/{{ref}}/long/{{ref}}.{sample}.longreads.numspannedjunctions.tsv", sample=long_samples)
+  output:
+    "SFS/{ref}/long/{ref}.longreads.freqtable.tsv",
+    "SFS/{ref}/long/{ref}.longreads.freqtable.singlyspanned.tsv",
+    "SFS/{ref}/long/{ref}.longreads.freqtable.multiplyspanned.tsv"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/make_freqtable_longreads.py"
+
+rule get_supporting_readnames:
+  input:
+    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
+  output:
+    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/get_supporting_readnames.py"
+
+rule subset_genome_bam:
+  input:
+    reads="Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
+    bam="BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam"
+  output:
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.bam"
+  shell:
+    "samtools view -b -N {input.reads} {input.bam} > {output}"
+
+checkpoint get_GeneIDs:
+  input:
+    "SFS/{ref}/long/{ref}.longreads.freqtable.tsv"
+  output:
+    directory(GeneIDs)
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/get_GeneIDs.py"
+
+rule get_GeneID_readnames:
+  input:
+    "Transcript/{ref}.transcript.coords.tsv",
+    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
+  output:
+    directory(GeneIDs)
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/get_GeneID_readnames.py"
+  
+#def aggregate_input(wildcards):
+#  checkpoint_output = checkpoints.get_GeneID_readnames.get(**wildcards).output[0]
+#  return expand("", sample=, geneID=glob_wildcards(os.path.join(checkpoint_output, "")).geneID)
+
+#rule get_GeneID_readnames:
+#  input:
+#    "../RetroGenes_short/Transcript/{ref}.transcript.coords.tsv",
+#    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
+#  output:
+#    "Analysis/{ref}/{sample}/{ref}.{sample}.{geneid}.names"
+#  params:
+#    "{geneid}"
+#  script:
+#    "scripts/get_GeneID_readnames.py"
+
+def aggregate_input(wildcards):
+	checkpoint_output = checkpoints.get_GeneIDS.get(**wildcards).output[0]
+	return expand("AS/{ref}/{sample}/{ref}.{sample}.{geneid}.genome.clustered.AS", ref=wildcards.ref, sample=wildcards.sample, geneid=glob_wildcards(os.path.join(checkpoint_output, "{geneid}.txt")).geneid)
+
+rule categorize_AS2:
+  input:
+    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.{geneid}.genome.clustered.AS", geneid=config["geneids"], sample=long_samples),
+    "../RetroGenes_short/Transcript/{transcript}.transcript.coords.tsv"
+  output:
+    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.alldiff.txt",
+    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.allsame.txt",
+    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.somediffsomesame.txt"
+  script:
+    "scripts/categorize_AS.py"

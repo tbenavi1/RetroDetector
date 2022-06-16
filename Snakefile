@@ -64,7 +64,12 @@ rule all:
     #expand("SFS/{ref}/long/{ref}.longreads.freqtable.tsv", ref=config["ref"])
     #expand("Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt", ref=config["ref"], sample=long_samples)
     #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.bam", ref=config["ref"], sample=long_samples)
-    "GeneIDs/"
+    #expand("AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt", ref=config["ref"])
+    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam", ref=config["ref"], sample=long_samples)
+    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam", ref=config["ref"], sample=long_samples)
+    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sorted.sam", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.AS", ref=config["ref"], sample=long_samples)
+    expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS", ref=config["ref"], sample=long_samples)
 
 def get_genomic_fna(wildcards):
   return config["ref"][wildcards.ref]["genomic_fna"]
@@ -510,30 +515,90 @@ rule subset_genome_bam:
     reads="Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
     bam="BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam"
   output:
-    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.bam"
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam"
   shell:
-    "samtools view -b -N {input.reads} {input.bam} > {output}"
+    "samtools view -N {input.reads} {input.bam} > {output}"
 
-checkpoint get_GeneIDs:
+rule add_geneid_to_subset_sam:
   input:
-    "SFS/{ref}/long/{ref}.longreads.freqtable.tsv"
-  output:
-    directory(GeneIDs)
-  params:
-    scripts=get_scripts
-  script:
-    "{params.scripts}/get_GeneIDs.py"
-
-rule get_GeneID_readnames:
-  input:
+    "SFS/{ref}/long/{ref}.longreads.freqtable.tsv",
     "Transcript/{ref}.transcript.coords.tsv",
-    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
+    "Spanned/{ref}/long/{ref}.{sample}.longreads.spanningalignments.sam",
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam"
   output:
-    directory(GeneIDs)
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sam",
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam"
   params:
     scripts=get_scripts
   script:
-    "{params.scripts}/get_GeneID_readnames.py"
+    "{params.scripts}/add_geneid_to_subset_sam.py"
+
+rule sort_subset_geneid_sam:
+  input:
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam"
+  output:
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam"
+  shell:
+    "sort -k1,1 {input} > {output}"
+
+rule sort_transcript_geneid_sam:
+  input:
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sam"
+  output:
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sorted.sam"
+  shell:
+    "sort -k1,1 {input} > {output}"
+
+rule analyze_anchors:
+  input:
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sorted.sam",
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam",
+  output:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.AS"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/analyze_anchors.py"
+
+rule cluster_anchors:
+  input:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.AS"
+  output:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/cluster_anchors.py"
+
+rule categorize_AS:
+  input:
+    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.genome.clustered.AS", sample=long_samples),
+    "Transcript/{ref}.transcript.coords.tsv"
+  output:
+    "AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt",
+    "AS/{ref}/SUMMARY/{ref}.SUMMARY.allsame.txt",
+    "AS/{ref}/SUMMARY/{ref}.SUMMARY.somediffsomesame.txt"
+
+#checkpoint get_GeneIDs:
+#  input:
+#    "SFS/{ref}/long/{ref}.longreads.freqtable.tsv"
+#  output:
+#    directory(GeneIDs)
+#  params:
+#    scripts=get_scripts
+#  script:
+#    "{params.scripts}/get_GeneIDs.py"
+
+#rule get_GeneID_readnames:
+#  input:
+#    "Transcript/{ref}.transcript.coords.tsv",
+#    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
+#  output:
+#    directory(GeneIDs)
+#  params:
+#    scripts=get_scripts
+#  script:
+#    "{params.scripts}/get_GeneID_readnames.py"
   
 #def aggregate_input(wildcards):
 #  checkpoint_output = checkpoints.get_GeneID_readnames.get(**wildcards).output[0]
@@ -550,17 +615,17 @@ rule get_GeneID_readnames:
 #  script:
 #    "scripts/get_GeneID_readnames.py"
 
-def aggregate_input(wildcards):
-	checkpoint_output = checkpoints.get_GeneIDS.get(**wildcards).output[0]
-	return expand("AS/{ref}/{sample}/{ref}.{sample}.{geneid}.genome.clustered.AS", ref=wildcards.ref, sample=wildcards.sample, geneid=glob_wildcards(os.path.join(checkpoint_output, "{geneid}.txt")).geneid)
+#def aggregate_input(wildcards):
+#	checkpoint_output = checkpoints.get_GeneIDS.get(**wildcards).output[0]
+#	return expand("AS/{ref}/{sample}/{ref}.{sample}.{geneid}.genome.clustered.AS", ref=wildcards.ref, sample=wildcards.sample, geneid=glob_wildcards(os.path.join(checkpoint_output, "{geneid}.txt")).geneid)
 
-rule categorize_AS2:
-  input:
-    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.{geneid}.genome.clustered.AS", geneid=config["geneids"], sample=long_samples),
-    "../RetroGenes_short/Transcript/{transcript}.transcript.coords.tsv"
-  output:
-    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.alldiff.txt",
-    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.allsame.txt",
-    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.somediffsomesame.txt"
-  script:
-    "scripts/categorize_AS.py"
+#rule categorize_AS2:
+#  input:
+#    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.{geneid}.genome.clustered.AS", geneid=config["geneids"], sample=long_samples),
+#    "../RetroGenes_short/Transcript/{transcript}.transcript.coords.tsv"
+#  output:
+#    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.alldiff.txt",
+#    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.allsame.txt",
+#    "AS/{transcript}/SUMMARY/{transcript}.SUMMARY.somediffsomesame.txt"
+#  script:
+#    "scripts/categorize_AS.py"

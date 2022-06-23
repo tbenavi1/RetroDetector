@@ -69,7 +69,11 @@ rule all:
     #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam", ref=config["ref"], sample=long_samples)
     #expand("Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sorted.sam", ref=config["ref"], sample=long_samples)
     #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.AS", ref=config["ref"], sample=long_samples)
-    expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt", ref=config["ref"], sample=long_samples)
+    #expand("Analysis/{ref}/{sample}/{ref}.{sample}.introns", ref=config["ref"], sample=long_samples)
+    #expand("Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent", ref=config["ref"], sample=long_samples)
+    expand("Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary", ref=config["ref"], sample=long_samples)
 
 def get_genomic_fna(wildcards):
   return config["ref"][wildcards.ref]["genomic_fna"]
@@ -560,9 +564,17 @@ rule analyze_anchors:
   script:
     "{params.scripts}/analyze_anchors.py"
 
-rule cluster_anchors:
+rule sort_anchors:
   input:
     "AS/{ref}/{sample}/{ref}.{sample}.genome.AS"
+  output:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.sorted.AS"
+  shell:
+    "sort -k1,1 -k6,6n -k7,7n {input} > {output}"
+
+rule cluster_anchors:
+  input:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.sorted.AS"
   output:
     "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS"
   params:
@@ -578,6 +590,45 @@ rule categorize_AS:
     "AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt",
     "AS/{ref}/SUMMARY/{ref}.SUMMARY.allsame.txt",
     "AS/{ref}/SUMMARY/{ref}.SUMMARY.somediffsomesame.txt"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/categorize_AS.py"
+
+rule get_GeneID_introns:
+  input:
+    "Summary/{ref}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv",
+    "Junctions/{ref}.introns.tsv"
+  output:
+    "Analysis/{ref}/{sample}/{ref}.{sample}.introns"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/get_GeneID_introns.py"
+
+rule missing_intron_percent:
+  input:
+    "Analysis/{ref}/{sample}/{ref}.{sample}.introns",
+    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam"
+  output:
+    "Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/missing_intron_percent.py"
+
+rule summarize_missing_intron:
+  input:
+    "AS/{ref}/SUMMARY/{ref}.SUMMARY.allsame.txt",
+    "Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent"
+  output:
+    "Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary",
+    "Analysis/{ref}/{sample}/{ref}.{sample}.intronweirdos"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/summarize_missing_intron.py"
 
 #checkpoint get_GeneIDs:
 #  input:

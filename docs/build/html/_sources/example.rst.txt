@@ -4,7 +4,7 @@ Example Dataset
 Drosophila melanogaster
 -----------------------
 
-In this example, we run the entire RetroDetector pipeline on a *Drosophila melanogaster* sample with Illumina paired-end and PacBio HiFi sequencing data. To begin, make a working directory and change into that directory. Please make sure to run all of the following code while you are in your working directory. The first step is to download the necessary reference files from NCBI:
+In this example, we run the entire RetroDetector pipeline on a *Drosophila melanogaster* sample with Illumina paired-end and PacBio HiFi sequencing data. First make sure you have installed RetroDetector and all its depencies according to the :doc:`installation` section. Then, make a working directory and change into that directory. Please make sure to run all of the following code while you are in your working directory. The first step is to download the necessary reference files from NCBI:
 
 .. code-block:: console
    

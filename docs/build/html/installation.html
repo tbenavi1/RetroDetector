@@ -99,7 +99,7 @@
 <span class="go">mamba create -c conda-forge -c bioconda -n snakemake snakemake</span>
 </pre></div>
 </div>
-<p>Finally, you can activate the snakemake environment using:</p>
+<p>Now, you can activate the snakemake environment using:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">conda activate snakemake</span>
 </pre></div>
 </div>
@@ -114,7 +114,33 @@
 <span class="go">cd ..</span>
 </pre></div>
 </div>
-<p>Then, make sure to add the paths to BWA and minimap2 to your $PATH environmental variable in order to make sure that</p>
+<p>Then, make sure to add the paths to BWA and minimap2 to your $PATH environment variable. For example, if your software directory is /user/software, you could run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export PATH=/user/software/minimap2:$PATH</span>
+<span class="go">export PATH=/user/software/bwa:$PATH</span>
+</pre></div>
+</div>
+<p>Next, you will need to install SAMtools. Please follow the instructions <a class="reference external" href="http://www.htslib.org/download/">here</a> to download and install the latest version of SAMtools and HTSlib. HTSlib is required in order to use bgzip. For example, if your software directory is /user/software, you could run the following (for SAMtools 1.15.1):</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">wget https://github.com/samtools/samtools/releases/download/1.15.1/samtools-1.15.1.tar.bz2</span>
+<span class="go">tar -xf samtools-1.15.1.tar.bz2</span>
+<span class="go">cd samtools-1.15.1</span>
+<span class="go">./configure --prefix=/user/software/samtools-1.15.1</span>
+<span class="go">make</span>
+<span class="go">make install</span>
+<span class="go">cd ..</span>
+<span class="go">wget https://github.com/samtools/htslib/releases/download/1.15.1/htslib-1.15.1.tar.bz2</span>
+<span class="go">tar -xf htslib-1.15.1.tar.bz2</span>
+<span class="go">cd htslib-1.15.1</span>
+<span class="go">./configure --prefix=/user/software/htslib-1.15.1</span>
+<span class="go">make</span>
+<span class="go">make install</span>
+<span class="go">cd ..</span>
+</pre></div>
+</div>
+<p>Finally, make sure to add the paths to SAMtools and HTSlib to your $PATH environment variable. For example:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export PATH=/user/software/samtools-1.15.1/bin:$PATH</span>
+<span class="go">export PATH=/user/software/htslib-1.15.1/bin:$PATH</span>
+</pre></div>
+</div>
 </section>
 </section>
 

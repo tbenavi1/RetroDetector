@@ -34,7 +34,7 @@ Now, you can install Snakemake:
    mamba create -c conda-forge -c bioconda -n snakemake snakemake
 
 
-Finally, you can activate the snakemake environment using:
+Now, you can activate the snakemake environment using:
 
 .. code-block:: console
 
@@ -53,5 +53,35 @@ Next, you will need to install `BWA <https://github.com/lh3/bwa>`_ and `minimap2
    make
    cd ..
 
-Then, make sure to add the paths to BWA and minimap2 to your $PATH environmental variable in order to make sure that 
+Then, make sure to add the paths to BWA and minimap2 to your $PATH environment variable. For example, if your software directory is /user/software, you could run:
 
+.. code-block:: console
+
+   export PATH=/user/software/minimap2:$PATH
+   export PATH=/user/software/bwa:$PATH
+
+Next, you will need to install SAMtools. Please follow the instructions `here <http://www.htslib.org/download/>`_ to download and install the latest version of SAMtools and HTSlib. HTSlib is required in order to use bgzip. For example, if your software directory is /user/software, you could run the following (for SAMtools 1.15.1):
+
+.. code-block:: console
+
+   wget https://github.com/samtools/samtools/releases/download/1.15.1/samtools-1.15.1.tar.bz2
+   tar -xf samtools-1.15.1.tar.bz2
+   cd samtools-1.15.1
+   ./configure --prefix=/user/software/samtools-1.15.1
+   make
+   make install
+   cd ..
+   wget https://github.com/samtools/htslib/releases/download/1.15.1/htslib-1.15.1.tar.bz2
+   tar -xf htslib-1.15.1.tar.bz2
+   cd htslib-1.15.1
+   ./configure --prefix=/user/software/htslib-1.15.1
+   make
+   make install
+   cd ..
+
+Finally, make sure to add the paths to SAMtools and HTSlib to your $PATH environment variable. For example: 
+
+.. code-block:: console
+
+   export PATH=/user/software/samtools-1.15.1/bin:$PATH
+   export PATH=/user/software/htslib-1.15.1/bin:$PATH

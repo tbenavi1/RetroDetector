@@ -73,7 +73,9 @@ rule all:
     #expand("AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt", ref=config["ref"], sample=long_samples)
     #expand("Analysis/{ref}/{sample}/{ref}.{sample}.introns", ref=config["ref"], sample=long_samples)
     #expand("Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent", ref=config["ref"], sample=long_samples)
-    expand("Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary", ref=config["ref"], sample=long_samples)
+    #expand("Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS", ref=config["ref"], sample=long_samples)
+    expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff", ref=config["ref"], sample=long_samples)
 
 def get_genomic_fna(wildcards):
   return config["ref"][wildcards.ref]["genomic_fna"]
@@ -582,18 +584,40 @@ rule cluster_anchors:
   script:
     "{params.scripts}/cluster_anchors.py"
 
+rule best_AS:
+  input:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS"
+  output:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/best_AS.py"
+
 rule categorize_AS:
   input:
-    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.genome.clustered.AS", sample=long_samples),
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS",
     "Transcript/{ref}.transcript.coords.tsv"
   output:
-    "AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt",
-    "AS/{ref}/SUMMARY/{ref}.SUMMARY.allsame.txt",
-    "AS/{ref}/SUMMARY/{ref}.SUMMARY.somediffsomesame.txt"
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff",
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.same"
   params:
     scripts=get_scripts
   script:
     "{params.scripts}/categorize_AS.py"
+
+#rule categorize_AS_summary:
+#  input:
+#    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.genome.clustered.AS", sample=long_samples),
+#    "Transcript/{ref}.transcript.coords.tsv"
+#  output:
+#    "AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt",
+#    "AS/{ref}/SUMMARY/{ref}.SUMMARY.allsame.txt",
+#    "AS/{ref}/SUMMARY/{ref}.SUMMARY.somediffsomesame.txt"
+#  params:
+#    scripts=get_scripts
+#  script:
+#    "{params.scripts}/categorize_AS_summary.py"
 
 rule get_GeneID_introns:
   input:

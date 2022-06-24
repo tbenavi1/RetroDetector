@@ -14,8 +14,6 @@ with open(snakemake.input[1], "r") as input_intron_file:
 	for line in input_intron_file:
 		if not line.startswith("Read"):
 			geneid, readname, transcript, intron, missing_percent, cigar = line.strip().split()
-			if geneid == "37654":
-				print(line)
 			if geneid in geneids:
 				missing_percent = float(missing_percent)
 				geneid_intron_to_percents[(geneid, intron)].append(missing_percent)
@@ -28,8 +26,10 @@ for geneid, intron in geneid_intron_to_percents:
 
 with open(snakemake.output[0], "w") as output_file, open(snakemake.output[1], "w") as output_weirdos_file:
 	for geneid in geneids:
+		#if none of the read alignments span across the entire intron
 		if geneid not in geneid_to_averages:
-			print(geneid)
+			output_file.write(f"{geneid}\tinconclusive\n")
+			continue
 		averages = geneid_to_averages[geneid]
 		if all(average >= 0.5 for average in averages):
 			output_file.write(f"{geneid}\tmissing\n")

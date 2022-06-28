@@ -20,6 +20,8 @@ RetroDetector is built on the `Snakemake <https://snakemake.readthedocs.io/en/st
    wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
    bash Mambaforge-Linux-x86_64.sh
 
+If you don't have this setup, you can download and install the file that corresponds to your OS and architecture, according to the table `here <https://github.com/conda-forge/miniforge#mambaforge>`_.
+
 You will then need to close and restart your terminal. If you want to prevent Conda from activating the base environment by default, you can run the following:
 
 .. code-block:: console

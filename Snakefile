@@ -52,11 +52,11 @@ rule all:
     #get_all_pb_fastq
     #get_all_ont_fastq
     #expand("Reference/{ref}.rna_from_genomic.fna.gz.bwt", ref=config["ref"])
-    #expand("Transcript/{ref}.transcript.coords.tsv", ref=config["ref"])
-    #expand("Junctions/{ref}.shortregions.fasta", ref=config["ref"])
-    #expand("Junctions/{ref}.longregions.fasta", ref=config["ref"])
+    #expand("Transcriptome/{ref}.transcriptome.coords.tsv", ref=config["ref"])
+    #expand("Junctions/{ref}.synthetic.shortreads.fasta", ref=config["ref"]),
+    #expand("Junctions/{ref}.synthetic.longreads.fasta", ref=config["ref"])
     #expand("BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.sorted.bam", ref=config["ref"], sample=config["fastqs"])
-    #expand("BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
+    #expand("BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
     #expand("BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam", ref=config["ref"], sample=config["fastqs"])
     #expand("Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv", ref=config["ref"])
     #expand("Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv", ref=config["ref"], sample=long_samples)
@@ -67,7 +67,7 @@ rule all:
     #expand("AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt", ref=config["ref"])
     #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam", ref=config["ref"], sample=long_samples)
     #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam", ref=config["ref"], sample=long_samples)
-    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sorted.sam", ref=config["ref"], sample=long_samples)
+    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sorted.sam", ref=config["ref"], sample=long_samples)
     #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.AS", ref=config["ref"], sample=long_samples)
     #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS", ref=config["ref"], sample=long_samples)
     #expand("AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt", ref=config["ref"], sample=long_samples)
@@ -75,7 +75,16 @@ rule all:
     #expand("Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent", ref=config["ref"], sample=long_samples)
     #expand("Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary", ref=config["ref"], sample=long_samples)
     #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS", ref=config["ref"], sample=long_samples)
-    expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff", ref=config["ref"], sample=long_samples)
+    #expand("Junctions/{ref}.junctions.tsv", ref=config["ref"])
+    #expand("BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.sorted.bam", ref=config["ref"])
+    #expand("BAMS/{ref}/synthetic/{ref}.synthetic.longreads.transcriptome.sorted.bam", ref=config["ref"])
+    #expand("Ambiguous/{ref}.ambiguous.short.spanningalignments.sam", ref=config["ref"])
+    #expand("Ambiguous/{ref}.ambiguous.long.spanningalignments.sam", ref=config["ref"])
+    #expand("Junctions/{ref}.junctions.unambiguous.short.tsv", ref=config["ref"])
+    #expand("Junctions/{ref}.junctions.unambiguous.long.tsv", ref=config["ref"])
+    #expand("BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.sorted.bam", ref=config["ref"], sample=short_samples)
+    expand("BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam", ref=config["ref"], sample=long_samples)
 
 def get_genomic_fna(wildcards):
   return config["ref"][wildcards.ref]["genomic_fna"]
@@ -156,7 +165,9 @@ rule link_long_fastq:
 	shell:
 		"ln -sr {input} {output}"
 
-rule bwa_index_transcript:
+#Index transcriptome according to short-read/long-read sequencing technology
+
+rule bwa_index_transcriptome:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
@@ -168,7 +179,7 @@ rule bwa_index_transcript:
   shell:
     "bwa index {input}"
 
-rule minimap2_hifi_index_transcript:
+rule minimap2_hifi_index_transcriptome:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
@@ -177,7 +188,7 @@ rule minimap2_hifi_index_transcript:
   shell:
     "minimap2 -x map-hifi -d {output} {input}"
 
-rule minimap2_pb_index_transcript:
+rule minimap2_pb_index_transcriptome:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
@@ -186,7 +197,7 @@ rule minimap2_pb_index_transcript:
   shell:
     "minimap2 -x map-pb -d {output} {input}"
 
-rule minimap2_ont_index_transcript:
+rule minimap2_ont_index_transcriptome:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
@@ -194,6 +205,8 @@ rule minimap2_ont_index_transcript:
   threads: 3
   shell:
     "minimap2 -x map-ont -d {output} {intput}"
+
+#Index genome according to long-read sequencing technology
 
 rule minimap2_hifi_index_genome:
   input:
@@ -222,44 +235,178 @@ rule minimap2_ont_index_genome:
   shell:
     "minimap2 -x map-ont -d {output} {intput}"
 
+#Analyze transcriptome to get coords, junctions, introns, synthetic short-read regions, and synthetic long-read regions
+
 def get_scripts(wildcards):
   return config["scripts_directory"]
 
-rule get_transcript_junctions:
+rule get_transcriptome_junctions:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz"
   output:
+    "Transcriptome/{ref}.transcriptome.coords.tsv",
     "Junctions/{ref}.junctions.tsv",
-    "Junctions/{ref}.shortregions.txt",
-    "Transcript/{ref}.transcript.coords.tsv",
     "Junctions/{ref}.introns.tsv",
-    "Junctions/{ref}.longregions.txt"
+    "Junctions/{ref}.synthetic.shortregions.txt",
+    "Junctions/{ref}.synthetic.longregions.txt"
   params:
     scripts=get_scripts
   script:
-    "{params.scripts}/get_transcript_junctions.py"
+    "{params.scripts}/get_transcriptome_junctions.py"
 
-#this step requires the reference to be zipped with bgzip
-rule get_junction_fasta_short:
+#Make synethetic short and long reads
+
+rule get_synthetic_fasta_short:
   input:
     ref="Reference/{ref}.genomic.fna.gz",
-    regions="Junctions/{ref}.shortregions.txt"
+    regions="Junctions/{ref}.synthetic.shortregions.txt"
   output:
-    "Junctions/{ref}.shortregions.fasta"
+    "Junctions/{ref}.synthetic.shortreads.fasta"
   shell:
     "samtools faidx {input.ref} -r {input.regions} > {output}"
 
-#this step requires the reference to be zipped with bgzip
-rule get_junction_fasta_long:
+rule get_synthetic_fasta_long:
   input:
     ref="Reference/{ref}.genomic.fna.gz",
-    regions="Junctions/{ref}.longregions.txt"
+    regions="Junctions/{ref}.synthetic.longregions.txt"
   output:
-    "Junctions/{ref}.longregions.fasta"
+    "Junctions/{ref}.synthetic.longreads.fasta"
   shell:
     "samtools faidx {input.ref} -r {input.regions} > {output}"
 
-rule bwa_aln_transcript:
+#Map synthetic short and long reads to transcriptome
+
+rule bwa_aln_synthetic_short_to_transcriptome:
+  input:
+    "Reference/{ref}.rna_from_genomic.fna.gz.amb",
+    "Reference/{ref}.rna_from_genomic.fna.gz.ann",
+    "Reference/{ref}.rna_from_genomic.fna.gz.bwt",
+    "Reference/{ref}.rna_from_genomic.fna.gz.pac",
+    "Reference/{ref}.rna_from_genomic.fna.gz.sa",
+    ref="Reference/{ref}.rna_from_genomic.fna.gz",
+    reads="Junctions/{ref}.synthetic.shortreads.fasta"
+  output:
+    temp("BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.sai")
+  threads: 16
+  shell:
+    "bwa aln -t {threads} {input.ref} {input.reads} > {output}"
+
+rule bwa_samse_synthetic_short_to_transcriptome:
+  input:
+    ref="Reference/{ref}.rna_from_genomic.fna.gz",
+    sai="BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.sai",
+    reads="Junctions/{ref}.synthetic.shortreads.fasta"
+  output:
+    temp("BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.sam")
+  shell:
+    "bwa samse {input.ref} {input.sai} {input.reads} > {output}"
+
+rule minimap2_synthetic_long_to_transcriptome:
+	input:
+		mmi="Reference/{ref}.rna_from_genomic.pacbio_hifi.mmi",
+		reads="Junctions/{ref}.synthetic.longreads.fasta"
+	output:
+		temp("BAMS/{ref}/synthetic/{ref}.synthetic.longreads.transcriptome.sam")
+	threads: 15
+	shell:
+		"minimap2 --eqx -t {threads} -a {input.mmi} {input.reads} > {output}"
+
+#Sort transcriptome bams for synthetic short and long reads
+
+rule sam_to_bam_transcriptome_synthetic_short:
+  input:
+    "BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.sam"
+  output:
+    temp("BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.bam")
+  threads: 16
+  shell:
+    "samtools view -F 4 -@ {threads} -b -o {output} {input}"
+
+rule sort_bam_transcriptome_synthetic_short:
+  input:
+    "BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.bam"
+  output:
+    "BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.sorted.bam"
+  threads: 16
+  shell:
+    "samtools sort -@ {threads} -o {output} {input}"
+
+rule sam_to_bam_transcriptome_synthetic_long:
+  input:
+    "BAMS/{ref}/synthetic/{ref}.synthetic.longreads.transcriptome.sam"
+  output:
+    temp("BAMS/{ref}/synthetic/{ref}.synthetic.longreads.transcriptome.bam")
+  threads: 16
+  shell:
+    "samtools view -F 4 -@ {threads} -b -o {output} {input}"
+
+rule sort_bam_transcriptome_synthetic_long:
+  input:
+    "BAMS/{ref}/synthetic/{ref}.synthetic.longreads.transcriptome.bam"
+  output:
+    "BAMS/{ref}/synthetic/{ref}.synthetic.longreads.transcriptome.sorted.bam"
+  threads: 16
+  shell:
+    "samtools sort -@ {threads} -o {output} {input}"
+
+#Find alignments of synthetic short and long reads that span exon/exon junctions without corresponding intronic sequence
+
+rule find_synthetic_short_alignments:
+  input:
+    junctions="Junctions/{ref}.junctions.tsv",
+    bam="BAMS/{ref}/synthetic/{ref}.synthetic.shortreads.transcriptome.sorted.bam"
+  output:
+    spanningalignments="Ambiguous/{ref}.ambiguous.short.spanningalignments.sam",
+    spannedjunctions="Ambiguous/{ref}.ambiguous.short.spannedjunctions.tsv"
+  params:
+    scripts=get_scripts,
+    junction_overhang=config["junction_overhang"],
+    insertions_threshold=config["insertions_threshold"]
+  shell:
+    "samtools view -h {input.bam} | python {params.scripts}/find_shortreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {output.spanningalignments} {output.spannedjunctions}"
+
+rule find_synthetic_long_alignments:  
+  input:
+    junctions="Junctions/{ref}.junctions.tsv",
+    bam="BAMS/{ref}/synthetic/{ref}.synthetic.longreads.transcriptome.sorted.bam"
+  output:
+    spanningalignments="Ambiguous/{ref}.ambiguous.long.spanningalignments.sam",
+    spannedjunctions="Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
+    flankregions="Flanks/{ref}/synthetic/{ref}.synthetic.flankregions.tsv"
+  params:
+    scripts=get_scripts,
+    junction_overhang=config["junction_overhang"],
+    insertions_threshold=config["insertions_threshold"]
+  shell:
+    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
+
+#Remove ambiguous junctions (based on alignments of synthetic short and long reads)
+
+rule remove_ambiguous_junctions_short:
+  input:
+    "Ambiguous/{ref}.ambiguous.short.spannedjunctions.tsv",
+    "Junctions/{ref}.junctions.tsv"
+  output:
+    "Junctions/{ref}.junctions.unambiguous.short.tsv"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/remove_ambiguous_junctions.py"
+
+rule remove_ambiguous_junctions_long:
+  input:
+    "Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
+    "Junctions/{ref}.junctions.tsv"
+  output:
+    "Junctions/{ref}.junctions.unambiguous.long.tsv"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/remove_ambiguous_junctions.py"
+
+#Map real short and long reads to transcriptome
+
+rule bwa_aln_transcriptome:
   input:
     "Reference/{ref}.rna_from_genomic.fna.gz.amb",
     "Reference/{ref}.rna_from_genomic.fna.gz.ann",
@@ -274,7 +421,7 @@ rule bwa_aln_transcript:
   shell:
     "bwa aln -t {threads} {input.ref} {input.reads} > {output}"
 
-rule bwa_sampe_transcript:
+rule bwa_sampe_transcriptome:
   input:
     ref="Reference/{ref}.rna_from_genomic.fna.gz",
     sai1="BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.{i}.1.sai",
@@ -286,7 +433,19 @@ rule bwa_sampe_transcript:
   shell:
     "bwa sampe {input.ref} {input.sai1} {input.sai2} {input.read1} {input.read2} > {output}"
 
-rule sam_to_bam_short:
+rule minimap_transcriptome_long:
+	input:
+		mmi="Reference/{ref}.rna_from_genomic.{tech}.mmi",
+		reads="FASTQS/{sample}/{tech}/{sample}.{tech}.{i}.fastq.gz"
+	output:
+		temp("BAMS/{ref}/{sample}/transcriptome/{tech}/{ref}.{sample}.transcriptome.{tech}.{i}.sam")
+	threads: 15
+	shell:
+		"minimap2 -t {threads} -a {input.mmi} {input.reads} > {output}"
+
+#Sort and merge transcriptome bams for real short and long reads
+
+rule sam_to_bam_transcriptome_short:
   input:
     "BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.{i}.sam"
   output:
@@ -295,7 +454,7 @@ rule sam_to_bam_short:
   shell:
     "samtools view -F 4 -@ {threads} -b -o {output} {input}"
 
-rule sort_bam_short:
+rule sort_bam_transcriptome_short:
   input:
     "BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.{i}.bam"
   output:
@@ -304,7 +463,7 @@ rule sort_bam_short:
   shell:
     "samtools sort -@ {threads} -o {output} {input}"
 
-def get_sorted_bam_short(wildcards):
+def get_sorted_bam_transcriptome_short(wildcards):
   files = []
   if "short_paired_end" in config["fastqs"][wildcards.sample]:
     i_s = config["fastqs"][wildcards.sample]["short_paired_end"]
@@ -313,70 +472,62 @@ def get_sorted_bam_short(wildcards):
       files.append(file)
   return files
 
-rule merge_bam_short:
+rule merge_bam_transcriptome_short:
   input:
-    get_sorted_bam_short
+    get_sorted_bam_transcriptome_short
   output:
     "BAMS/{ref}/{sample}/short_paired_end/{ref}.{sample}.short.sorted.bam"
   threads: 16
   shell:
     "samtools merge -@ {threads} -o {output} {input}"
 
-rule minimap_transcript_long:
+rule sam_to_bam_transcriptome_long:
 	input:
-		mmi="Reference/{ref}.rna_from_genomic.{tech}.mmi",
-		reads="FASTQS/{sample}/{tech}/{sample}.{tech}.{i}.fastq.gz"
+		"BAMS/{ref}/{sample}/transcriptome/{tech}/{ref}.{sample}.transcriptome.{tech}.{i}.sam"
 	output:
-		temp("BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.sam")
-	threads: 15
-	shell:
-		"minimap2 -t {threads} -a {input.mmi} {input.reads} > {output}"
-
-rule sam_to_bam_transcript_long:
-	input:
-		"BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.sam"
-	output:
-		temp("BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.bam")
+		temp("BAMS/{ref}/{sample}/transcriptome/{tech}/{ref}.{sample}.transcriptome.{tech}.{i}.bam")
 	threads: 16
 	shell:
 		"samtools view -F 4 -@ {threads} -b -o {output} {input}"
 
-rule sort_bam_transcript_long:
+rule sort_bam_transcriptome_long:
 	input:
-		"BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.bam"
+		"BAMS/{ref}/{sample}/transcriptome/{tech}/{ref}.{sample}.transcriptome.{tech}.{i}.bam"
 	output:
-		temp("BAMS/{ref}/{sample}/transcript/{tech}/{ref}.{sample}.transcript.{tech}.{i}.sorted.bam")
+		temp("BAMS/{ref}/{sample}/transcriptome/{tech}/{ref}.{sample}.transcriptome.{tech}.{i}.sorted.bam")
 	threads: 16
 	shell:
 		"samtools sort -@ {threads} -o {output} {input}"
 
-def get_sorted_bam_transcript_long(wildcards):
+def get_sorted_bam_transcriptome_long(wildcards):
   files = []
   if "pacbio_hifi" in config["fastqs"][wildcards.sample]:
     i_s = config["fastqs"][wildcards.sample]["pacbio_hifi"]
     for i in i_s:
-      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcript/pacbio_hifi/{wildcards.ref}.{wildcards.sample}.transcript.pacbio_hifi.{i}.sorted.bam"
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcriptome/pacbio_hifi/{wildcards.ref}.{wildcards.sample}.transcriptome.pacbio_hifi.{i}.sorted.bam"
       files.append(file)
   if "pacbio_clr" in config["fastqs"][wildcards.sample]:
     i_s = config["fastqs"][wildcards.sample]["pacbio_clr"]
     for i in i_s:
-      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcript/pacbio_clr/{wildcards.ref}.{wildcards.sample}.transcript.pacbio_clr.{i}.sorted.bam"
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcriptome/pacbio_clr/{wildcards.ref}.{wildcards.sample}.transcriptome.pacbio_clr.{i}.sorted.bam"
       files.append(file)
   if "ont" in config["fastqs"][wildcards.sample]:
     i_s = config["fastqs"][wildcards.sample]["ont"]
     for i in i_s:
-      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcript/ont/{wildcards.ref}.{wildcards.sample}.transcript.ont.{i}.sorted.bam"
+      file = f"BAMS/{wildcards.ref}/{wildcards.sample}/transcriptome/ont/{wildcards.ref}.{wildcards.sample}.transcriptome.ont.{i}.sorted.bam"
       files.append(file)
   return files
 
-rule merge_bam_transcript_long:
+rule merge_bam_transcriptome_long:
 	input:
-		get_sorted_bam_transcript_long
+		get_sorted_bam_transcriptome_long
 	output:
-		"BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam"
+		"BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam"
 	threads: 16
 	shell:
 		"samtools merge -@ {threads} -o {output} {input}"
+
+#Map real long reads to genome
 
 rule minimap_genome_long:
 	input:
@@ -387,6 +538,8 @@ rule minimap_genome_long:
 	threads: 15
 	shell:
 		"minimap2 -t {threads} -a {input.mmi} {input.reads} > {output}"
+
+#Sort and merge transcriptome bams for real long reads
 
 rule sam_to_bam_genome_long:
 	input:
@@ -434,44 +587,46 @@ rule merge_bam_genome_long:
 	shell:
 		"samtools merge -@ {threads} -o {output} {input}"
 
-rule minimap2_junctionreads_to_transcript:
-	input:
-		mmi="Reference/{ref}.rna_from_genomic.pacbio_hifi.mmi",
-		reads="Junctions/{ref}.longregions.fasta"
-	output:
-		"BAMS/{ref}/junction/{ref}.junctionreads.long.transcript.sam"
-	threads: 15
-	shell:
-		"minimap2 --eqx -t {threads} -a {input.mmi} {input.reads} > {output}"
+#
 
-rule find_junctionreads_alignments_long:
-  input:
-    junctions="Junctions/{ref}.junctions.tsv",
-    bam="BAMS/{ref}/junction/{ref}.junctionreads.long.transcript.sam"
-  output:
-    spanningalignments="Ambiguous/{ref}.ambiguous.long.spanningalignments.sam",
-    spannedjunctions="Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
-    flankregions="Flanks/{ref}/junction/{ref}.junction.flankregions.tsv"
-  params:
-    scripts=get_scripts
-  shell:
-    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
+#rule minimap2_junctionreads_to_transcriptome:
+#	input:
+#		mmi="Reference/{ref}.rna_from_genomic.pacbio_hifi.mmi",
+#		reads="Junctions/{ref}.longregions.fasta"
+#	output:
+#		"BAMS/{ref}/junction/{ref}.junctionreads.long.transcriptome.sam"
+#	threads: 15
+#	shell:
+#		"minimap2 --eqx -t {threads} -a {input.mmi} {input.reads} > {output}"
 
-rule remove_ambiguous_junctions_long:
-  input:
-    "Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
-    "Junctions/{ref}.junctions.tsv"
-  output:
-    "Junctions/{ref}.junctions.unambiguous.long.tsv"
-  params:
-    scripts=get_scripts
-  script:
-    "{params.scripts}/remove_ambiguous_junctions.py"
+#rule find_junctionreads_alignments_long:
+#  input:
+#    junctions="Junctions/{ref}.junctions.tsv",
+#    bam="BAMS/{ref}/junction/{ref}.junctionreads.long.transcriptome.sam"
+#  output:
+#    spanningalignments="Ambiguous/{ref}.ambiguous.long.spanningalignments.sam",
+#    spannedjunctions="Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
+#    flankregions="Flanks/{ref}/junction/{ref}.junction.flankregions.tsv"
+#  params:
+#    scripts=get_scripts
+#  shell:
+#    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
+
+#rule remove_ambiguous_junctions_long:
+#  input:
+#    "Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
+#    "Junctions/{ref}.junctions.tsv"
+#  output:
+#    "Junctions/{ref}.junctions.unambiguous.long.tsv"
+#  params:
+#    scripts=get_scripts
+#  script:
+#    "{params.scripts}/remove_ambiguous_junctions.py"
 
 rule find_longreads_alignments:
   input:
     junctions="Junctions/{ref}.junctions.unambiguous.long.tsv",
-    bam="BAMS/{ref}/{sample}/transcript/long/{ref}.{sample}.transcript.long.sorted.bam"
+    bam="BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam"
   output:
     spanningalignments="Spanned/{ref}/long/{ref}.{sample}.longreads.spanningalignments.sam",
     spannedjunctions="Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
@@ -483,7 +638,7 @@ rule find_longreads_alignments:
 
 rule summarize_alignments_long:
   input:
-    "Transcript/{ref}.transcript.coords.tsv",
+    "Transcriptome/{ref}.transcriptome.coords.tsv",
     "Junctions/{ref}.junctions.tsv",
     "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
   output:
@@ -528,11 +683,11 @@ rule subset_genome_bam:
 rule add_geneid_to_subset_sam:
   input:
     "SFS/{ref}/long/{ref}.longreads.freqtable.tsv",
-    "Transcript/{ref}.transcript.coords.tsv",
+    "Transcriptome/{ref}.transcriptome.coords.tsv",
     "Spanned/{ref}/long/{ref}.{sample}.longreads.spanningalignments.sam",
     "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam"
   output:
-    "Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sam",
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sam",
     "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam"
   params:
     scripts=get_scripts
@@ -547,17 +702,17 @@ rule sort_subset_geneid_sam:
   shell:
     "sort -k1,1 {input} > {output}"
 
-rule sort_transcript_geneid_sam:
+rule sort_transcriptome_geneid_sam:
   input:
-    "Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sam"
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sam"
   output:
-    "Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sorted.sam"
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sorted.sam"
   shell:
     "sort -k1,1 {input} > {output}"
 
 rule analyze_anchors:
   input:
-    "Anchor/{ref}/{sample}/{ref}.{sample}.transcript.long.subset.geneid.sorted.sam",
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sorted.sam",
     "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam",
   output:
     "AS/{ref}/{sample}/{ref}.{sample}.genome.AS"
@@ -597,7 +752,7 @@ rule best_AS:
 rule categorize_AS:
   input:
     "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS",
-    "Transcript/{ref}.transcript.coords.tsv"
+    "Transcriptome/{ref}.transcriptome.coords.tsv"
   output:
     "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff",
     "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.same"
@@ -609,7 +764,7 @@ rule categorize_AS:
 #rule categorize_AS_summary:
 #  input:
 #    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.genome.clustered.AS", sample=long_samples),
-#    "Transcript/{ref}.transcript.coords.tsv"
+#    "Transcriptome/{ref}.transcriptome.coords.tsv"
 #  output:
 #    "AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt",
 #    "AS/{ref}/SUMMARY/{ref}.SUMMARY.allsame.txt",
@@ -666,7 +821,7 @@ rule summarize_missing_intron:
 
 #rule get_GeneID_readnames:
 #  input:
-#    "Transcript/{ref}.transcript.coords.tsv",
+#    "Transcriptome/{ref}.transcriptome.coords.tsv",
 #    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
 #  output:
 #    directory(GeneIDs)

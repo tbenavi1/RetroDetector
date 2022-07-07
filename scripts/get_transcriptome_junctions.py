@@ -1,6 +1,6 @@
 import gzip
 
-with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemake.output[0], "w") as output_junction_file, open(snakemake.output[1], "w") as output_shortregions_txt_file, open(snakemake.output[2], "w") as output_coords_file, open(snakemake.output[3], "w") as output_introns_file, open(snakemake.output[4], "w") as output_longregions_txt_file:
+with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemake.output[0], "w") as output_coords_file, open(snakemake.output[1], "w") as output_junctions_file, open(snakemake.output[2], "w") as output_introns_file, open(snakemake.output[3], "w") as output_shortregions_file, open(snakemake.output[4], "w") as output_longregions_file:
 	for line in input_transcript_file:
 		if line.startswith(">"):
 			transcript = line.strip().split(" ")[0][1:]
@@ -47,9 +47,9 @@ with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemak
 				continue
 			exons = positions.split(",")
 			num_exons = len(exons)
-			gene_start = exons[0].split("..")[0]
-			gene_stop = exons[-1].split("..")[-1]
-			output_coords_file.write(f"{transcript}\t{GeneID}\t{chrom}\t{gene_start}\t{gene_stop}\n")
+			transcript_start = exons[0].split("..")[0]
+			transcript_stop = exons[-1].split("..")[-1]
+			output_coords_file.write(f"{GeneID}\t{transcript}\t{chrom}\t{transcript_start}\t{transcript_stop}\n")
 			startstops = []
 			skip_line = False
 			for exon in exons:
@@ -84,31 +84,31 @@ with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemak
 				junctions = [current_length - junction for junction in reversed(junctions)]
 				ref_introns = reversed(ref_introns)
 			junctions = "\t".join(str(junction) for junction in junctions)
-			ref_introns = "\t".join(ref_intron for ref_intron in ref_introns)
-			output_junction_file.write(f"{transcript}\t{junctions}\n")
-			output_introns_file.write(f"{transcript}\t{ref_introns}\n")
+			ref_introns = "\t".join(f"{chrom}:{ref_intron}" for ref_intron in ref_introns)
+			output_junctions_file.write(f"{GeneID}\t{transcript}\t{junctions}\n")
+			output_introns_file.write(f"{GeneID}\t{transcript}\t{ref_introns}\n")
 			for ref_junction in ref_junctions:
 				short_start = ref_junction - 74
 				short_stop = ref_junction + 75
-				output_shortregions_txt_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
 				short_start = ref_junction - 129
 				short_stop = ref_junction + 20
-				output_shortregions_txt_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
 				short_start = ref_junction - 19
 				short_stop = ref_junction + 130
-				output_shortregions_txt_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
 				short_start = ref_junction - 139
 				short_stop = ref_junction + 10
-				output_shortregions_txt_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
 				short_start = ref_junction - 9
 				short_stop = ref_junction + 140
-				output_shortregions_txt_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
 				long_start = max(ref_junction - 4999, 1)
 				long_stop = ref_junction + 5000
-				output_longregions_txt_file.write(f"{chrom}:{long_start}-{long_stop}\n")
+				output_longregions_file.write(f"{chrom}:{long_start}-{long_stop}\n")
 				long_start = max(ref_junction - 9899, 1)
 				long_stop = ref_junction + 100
-				output_longregions_txt_file.write(f"{chrom}:{long_start}-{long_stop}\n")
+				output_longregions_file.write(f"{chrom}:{long_start}-{long_stop}\n")
 				long_start = max(ref_junction - 99, 1)
 				long_stop = ref_junction + 9900
-				output_longregions_txt_file.write(f"{chrom}:{long_start}-{long_stop}\n")
+				output_longregions_file.write(f"{chrom}:{long_start}-{long_stop}\n")

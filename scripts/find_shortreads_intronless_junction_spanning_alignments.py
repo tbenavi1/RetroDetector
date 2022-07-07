@@ -70,43 +70,11 @@ def is_intronless(cigar, allowed_insertions = 10):
 		cigar_digits = int(block.group(1))
 		cigar_operation = block.group(2)
 		if cigar_operation == "I":
-		#if cigar_operation in ["I", "D", "N", "S"]: #removed X to bring in line with short read pipeline
+		#if cigar_operation in ["I", "D", "N", "S"]: #changed to this to match long read, also removed "X"
 			number_insertions += cigar_digits
 			if number_insertions > allowed_insertions:
 				return False
 	return True
-
-def get_flank_regions(cigar):
-	flank_ops = {"S", "H"}
-	query_ops = {"M", "I", "=", "X"}
-	query_pos = 0
-	X = re.finditer("(\d+)([MIDNSHPX=])", cigar)
-	finished_left_flank = False
-	finished_right_flank = False
-	regions = []
-	for block in X:
-		cigar_digits = int(block.group(1))
-		cigar_operation = block.group(2)
-		if cigar_operation in flank_ops:
-			if finished_left_flank and not finished_right_flank:
-				right_flank_pos = query_pos + 1
-				finished_right_flank = True
-			query_pos += cigar_digits
-		else:
-			if not finished_left_flank:
-				finished_left_flank = True
-				left_flank_pos = query_pos
-			if cigar_operation in query_ops:
-				query_pos += cigar_digits
-	if not finished_right_flank:
-		right_flank_pos = query_pos + 1
-	if left_flank_pos >= 1:
-		region = f"1-{left_flank_pos}"
-		regions.append(region)
-	if right_flank_pos <= query_pos:
-		region = f"{right_flank_pos}-{query_pos}"
-		regions.append(region)
-	return regions
 
 transcript_to_junctions = {}
 transcript_to_geneid = {}
@@ -116,7 +84,7 @@ with open(sys.argv[3], "r") as input_junctions_file:
 		transcript_to_junctions[transcript] = junctions
 		transcript_to_geneid[transcript] = geneid
 
-with open(sys.argv[4], "w") as output_spanningalignments_file, open(sys.argv[5], "w") as output_spannedjunctions_file, open(sys.argv[6], "w") as output_flankregions_file:
+with open(sys.argv[4], "w") as output_spanningalignments_file, open(sys.argv[5], "w") as output_spannedjunctions_file:
 	for line in sys.stdin:
 		if line.startswith("@"):
 			output_spanningalignments_file.write(line)
@@ -140,7 +108,29 @@ with open(sys.argv[4], "w") as output_spanningalignments_file, open(sys.argv[5],
 							is_supporting_alignment = True
 				if is_supporting_alignment:
 					output_spanningalignments_file.write(line)
-					flank_regions = get_flank_regions(cigar)
-					for flank_region in flank_regions:
-						read_flank = f"{readname}:{flank_region}"
-						output_flankregions_file.write(f"{geneid}\t{transcript}\t{read_flank}\n")
+#			#also need to parse alternate hits
+#			optional_fields = line.strip().split()[11:]
+#			for optional_field in optional_fields:
+#				#if there are optional hits for this alignment
+#				#optional_field may look like XA:Z:FBtr0257228,+1385,63M88S,5;FBtr0402045,+1383,63M88S,5;
+#				if optional_field.startswith("XA:Z:"):
+#					alternate_hits = optional_field.split(":")[2][:-1].split(";")
+#					#alternate_hit may look like FBtr0257228,+1385,63M88S,5
+#					for alternate_hit in alternate_hits:
+#						transcript, pos, cigar, NM = alternate_hit.split(",")
+#						#strip off the plus or minus, convert to int
+#						pos = int(pos[1:])
+#						if transcript in transcript_to_junctions:
+#							junctions = transcript_to_junctions[transcript]
+#							cigar_ref_len = ref_len(cigar)
+#							for junction in junctions:
+#								junction = int(junction)
+#								#if there is an alignment that spans 10bp on either side of junction
+#								if pos + 9 <= junction <= pos + cigar_ref_len - 10:
+#									region_cigar = subset_cigar_string(cigar, pos, junction - 9, junction + 10)
+#									#if this alignment does not have an intron
+#									#aka, if the cigar has at most 10 insertions
+#									if is_intronless(region_cigar, 10):
+#									#if is_intronless(region_cigar, 2): #changed from 10 to 2 to match long read
+#										output_spanningalignments_file.write(line)
+#										output_spannedjunctions_file.write(f"{transcript}\t{junction}\t{readname}\n")

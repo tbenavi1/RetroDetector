@@ -15,4 +15,10 @@ fastqs:
 
 scripts_directory:
 
+#A supporting alignment must extend at least junction_overhang base pairs on both sides of an exon-exon junction
+junction_overhang: 10
+
+#A supporting alignment must have no more than insertions_threshold insertions (in the region comprised of the junction_overhang base pairs on either side of an exon-exon junction)
+insertions_threshold: 10 
+
 read_threshold: 3

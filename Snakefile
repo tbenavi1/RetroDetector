@@ -121,12 +121,23 @@ rule bgzip_rna_from_genomic:
   shell:
     "bgzip {input}"
 
+#index reference genome
+
+rule index_genome:
+  input:
+    "Reference/{ref}.genomic.fna.gz"
+  output:
+    "Reference/{ref}.genomic.fna.gz.fai",
+    "Reference/{ref}.genomic.fna.gz.gzi"
+  shell:
+    "samtools faidx {input}"
+
 #link FASTQ files
 
 def get_short_fastq(wildcards):
   return config["fastqs"][wildcards.sample]["short_paired_end"][int(wildcards.i)][int(wildcards.j)]
 
-rule link_short:
+rule link_short_fastq:
   input:
     get_short_fastq
   output:
@@ -238,6 +249,8 @@ rule get_transcriptome_junctions:
 
 rule get_synthetic_fasta_short:
   input:
+    "Reference/{ref}.genomic.fna.gz.fai",
+    "Reference/{ref}.genomic.fna.gz.gzi",
     ref="Reference/{ref}.genomic.fna.gz",
     regions="Junctions/{ref}.synthetic.shortregions.txt"
   output:
@@ -247,6 +260,8 @@ rule get_synthetic_fasta_short:
 
 rule get_synthetic_fasta_long:
   input:
+    "Reference/{ref}.genomic.fna.gz.fai",
+    "Reference/{ref}.genomic.fna.gz.gzi",
     ref="Reference/{ref}.genomic.fna.gz",
     regions="Junctions/{ref}.synthetic.longregions.txt"
   output:

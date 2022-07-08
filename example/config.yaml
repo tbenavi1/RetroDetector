@@ -1,11 +1,11 @@
 ref:
-  ncbi_dmel:
+  "ncbi_dmel":
     genomic_fna: Downloads/ncbi_dmel.genomic.fna.gz
     genomic_gtf: Downloads/ncbi_dmel.genomic.gtf.gz
     rna_from_genomic: Downloads/ncbi_dmel.rna_from_genomic.fna.gz
 
 fastqs:
-  ISO1:
+  "ISO1":
     short_paired_end:
       1:
         1: Downloads/SRR10728584_1.fastq.gz

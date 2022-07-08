@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'RetroDetector'
-copyright = '2022, T. Rhyker Ranallo-Benavidez, James E. Titus-McQuillan, Rebekah L. Rogers'
-author = 'T. Rhyker Ranallo-Benavidez, James E. Titus-McQuillan, Rebekah L. Rogers'
+copyright = '2022, T. Rhyker Ranallo-Benavidez, James E. Titus-McQuillan, Taylor D. Conway, Rebekah L. Rogers'
+author = 'T. Rhyker Ranallo-Benavidez, James E. Titus-McQuillan, Taylor D. Conway, Rebekah L. Rogers'
 
 # The full version, including alpha/beta/rc tags
 release = '0.1'

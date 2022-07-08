@@ -3,7 +3,7 @@ from collections import defaultdict
 samples = []
 for sample in snakemake.config["fastqs"]:
 	techs = snakemake.config["fastqs"][sample]
-	if "pacbio_hifi" in techs or "pacbio_clr" in techs or "ont" in techs:
+	if "short_paired_end" in techs:
 		samples.append(sample)
 
 num_samples = len(samples)

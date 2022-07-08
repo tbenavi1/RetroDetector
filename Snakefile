@@ -53,10 +53,14 @@ rule all:
     #expand("Ambiguous/{ref}.ambiguous.long.spanningalignments.sam", ref=config["ref"])
     #expand("Junctions/{ref}.junctions.unambiguous.short.tsv", ref=config["ref"])
     #expand("Junctions/{ref}.junctions.unambiguous.long.tsv", ref=config["ref"])
-    #expand("BAMS/{ref}/{sample}/transcriptome/short_paired_end/{ref}.{sample}.transcriptome.short.sorted.bam", ref=config["ref"], sample=short_samples)
+    #expand("BAMS/{ref}/{sample}/transcriptome/short_paired_end/{ref}.{sample}.transcriptome.short.sorted.bam", ref=config["ref"], sample=short_samples),
     #expand("BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam", ref=config["ref"], sample=long_samples)
-    #expand("Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spanningalignments.sam", ref=config["ref"], sample=short_samples)
-    expand("Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam", ref=config["ref"], sample=long_samples)
+    #expand("Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spanningalignments.sam", ref=config["ref"], sample=short_samples),
+    #expand("Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam", ref=config["ref"], sample=long_samples)
+    #expand("Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.coverage.across.junctions.tsv", ref=config["ref"], sample=short_samples),
+    #expand("Summary/{ref}/{sample}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv", ref=config["ref"], sample=long_samples)
+    #expand("SFS/{ref}/summary/long/{ref}.longreads.freqtable.tsv", ref=config["ref"])
+    expand("SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.tsv", ref=config["ref"])
 
 #bgzip reference genome
 
@@ -555,14 +559,25 @@ rule find_longreads_alignments:
 
 #Summarize alignments of real short and long reads
 
+rule summarize_alignments_short:
+  input:
+    "Junctions/{ref}.junctions.tsv",
+    "Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spannedjunctions.tsv"
+  output:
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.coverage.across.junctions.tsv",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.numspannedjunctions.tsv"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/summarize_spanned_junctions.py"
+
 rule summarize_alignments_long:
   input:
-    "Transcriptome/{ref}.transcriptome.coords.tsv",
     "Junctions/{ref}.junctions.tsv",
-    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
+    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
   output:
-    "Summary/{ref}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv",
-    "Summary/{ref}/long/{ref}.{sample}.longreads.numspannedjunctions.tsv"
+    "Summary/{ref}/{sample}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv",
+    "Summary/{ref}/{sample}/long/{ref}.{sample}.longreads.numspannedjunctions.tsv"
   params:
     scripts=get_scripts
   script:
@@ -570,13 +585,25 @@ rule summarize_alignments_long:
 
 #Make frequency table for putative retrogenes
 
+rule make_freqtable_short:
+  input:
+    expand("Summary/{{ref}}/{sample}/short_paired_end/{{ref}}.{sample}.shortreads.numspannedjunctions.tsv", sample=short_samples)
+  output:
+    "SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.tsv",
+    "SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.singlyspanned.tsv",
+    "SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.multiplyspanned.tsv"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/make_freqtable_shortreads.py"
+
 rule make_freqtable_long:
   input:
-    expand("Summary/{{ref}}/long/{{ref}}.{sample}.longreads.numspannedjunctions.tsv", sample=long_samples)
+    expand("Summary/{{ref}}/{sample}/long/{{ref}}.{sample}.longreads.numspannedjunctions.tsv", sample=long_samples)
   output:
-    "SFS/{ref}/long/{ref}.longreads.freqtable.tsv",
-    "SFS/{ref}/long/{ref}.longreads.freqtable.singlyspanned.tsv",
-    "SFS/{ref}/long/{ref}.longreads.freqtable.multiplyspanned.tsv"
+    "SFS/{ref}/summary/long/{ref}.longreads.freqtable.tsv",
+    "SFS/{ref}/summary/long/{ref}.longreads.freqtable.singlyspanned.tsv",
+    "SFS/{ref}/summary/long/{ref}.longreads.freqtable.multiplyspanned.tsv"
   params:
     scripts=get_scripts
   script:

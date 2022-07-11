@@ -59,8 +59,8 @@ rule all:
     #expand("Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam", ref=config["ref"], sample=long_samples)
     #expand("Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.coverage.across.junctions.tsv", ref=config["ref"], sample=short_samples),
     #expand("Summary/{ref}/{sample}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv", ref=config["ref"], sample=long_samples)
-    #expand("SFS/{ref}/summary/long/{ref}.longreads.freqtable.tsv", ref=config["ref"])
-    expand("SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.tsv", ref=config["ref"])
+    expand("SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.tsv", ref=config["ref"]),
+    expand("SFS/{ref}/summary/long/{ref}.longreads.freqtable.tsv", ref=config["ref"])
 
 #bgzip reference genome
 

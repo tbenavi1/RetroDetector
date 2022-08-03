@@ -3,7 +3,7 @@ dist_threshold = 10000
 GeneID_to_location = {}
 with open(snakemake.input[1], "r") as input_coords_file:
   for line in input_coords_file:
-    transcript, GeneID, chrom, start, stop = line.strip().split()
+    GeneID, transcript, chrom, start, stop = line.strip().split()
     #for flybase_dyak
     if "-" in GeneID:
       GeneID = GeneID.split("-")[0]
@@ -16,12 +16,12 @@ with open(snakemake.input[1], "r") as input_coords_file:
 
 with open(snakemake.input[0], "r") as input_AS_file, open(snakemake.output[0], "w") as output_diff_file, open(snakemake.output[1], "w") as output_same_file:
 	for line in input_AS_file:
-		geneid, anchor_range, anchor_AS = line.strip().split()
+		geneid, transcript, anchor_range, anchor_AS = line.strip().split()
 		gene_chrom, gene_start, gene_stop = GeneID_to_location[geneid]
 		anchor_chrom, anchor_startstop = anchor_range.split(":")
 		anchor_start, anchor_stop = anchor_startstop.split("-")
 		anchor_start, anchor_stop = int(anchor_start), int(anchor_stop)
 		if gene_chrom != anchor_chrom or anchor_start > gene_stop + dist_threshold or gene_start > anchor_stop + dist_threshold:
-			output_diff_file.write(f"{geneid}\t{anchor_range}\n")
+			output_diff_file.write(f"{geneid}\t{transcript}\t{anchor_range}\n")
 		else:
-			output_same_file.write(f"{geneid}\t{anchor_range}\n")
+			output_same_file.write(f"{geneid}\t{transcript}\t{anchor_range}\n")

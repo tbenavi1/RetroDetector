@@ -5,18 +5,18 @@ distance_threshold = 10000 #changed to 100 from 10000 since are locations are no
 
 cluster_chrom = ""
 previous_chrom = ""
-previous_geneid = ""
+previous_transcript = ""
 previous_pos = 0
 qname_to_AS = defaultdict(int)
 #with open(sys.argv[1], "r") as input_sam_file, open(sys.argv[2], "w") as output_AS_file:
 with open(snakemake.input[0], "r") as input_AS_file, open(snakemake.output[0], "w") as output_AS_file:
 	for line in input_AS_file:
-		geneid, qname, read_start, read_stop, chrom, ref_start, ref_stop, AS = line.strip().split()
+		geneid, transcript, qname, read_start, read_stop, chrom, ref_start, ref_stop, AS = line.strip().split()
 		ref_start, ref_stop, AS = int(ref_start), int(ref_stop), int(AS)
 		if ref_start > ref_stop:
 			ref_start, ref_stop = ref_stop, ref_start
 		#if this is the same as previous cluster
-		if geneid == previous_geneid and chrom == previous_chrom and ref_stop <= previous_pos + distance_threshold:
+		if transcript == previous_transcript and chrom == previous_chrom and ref_stop <= previous_pos + distance_threshold:
 			#print("hi")
 			cluster_stop = ref_stop #pos
 			previous_AS = qname_to_AS[qname]
@@ -30,16 +30,17 @@ with open(snakemake.input[0], "r") as input_AS_file, open(snakemake.output[0], "
 				read_AS = qname_to_AS[qname]
 				cluster_AS += read_AS
 			if cluster_chrom:
-				output_AS_file.write(f"{cluster_geneid}\t{cluster_chrom}:{cluster_start}-{cluster_stop}\t{cluster_AS}\n")
+				output_AS_file.write(f"{cluster_geneid}\t{cluster_transcript}\t{cluster_chrom}:{cluster_start}-{cluster_stop}\t{cluster_AS}\n")
 			#initialize new cluster
 			qname_to_AS = defaultdict(int)
 			cluster_chrom = chrom
 			cluster_geneid = geneid
+			cluster_transcript = transcript
 			cluster_start = ref_start #pos
 			cluster_stop = ref_stop #pos
 			qname_to_AS[qname] = AS
 		previous_chrom = chrom
-		previous_geneid = geneid
+		previous_transcript = transcript
 		previous_pos = ref_stop #pos
 	#write last cluster
 	cluster_AS = 0
@@ -47,4 +48,4 @@ with open(snakemake.input[0], "r") as input_AS_file, open(snakemake.output[0], "
 		read_AS = qname_to_AS[qname]
 		cluster_AS += read_AS
 	if cluster_chrom:
-		output_AS_file.write(f"{cluster_geneid}\t{cluster_chrom}:{cluster_start}-{cluster_stop}\t{cluster_AS}\n")
+		output_AS_file.write(f"{cluster_geneid}\t{cluster_transcript}\t{cluster_chrom}:{cluster_start}-{cluster_stop}\t{cluster_AS}\n")

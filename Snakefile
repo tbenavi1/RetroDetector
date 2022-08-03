@@ -59,8 +59,21 @@ rule all:
     #expand("Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam", ref=config["ref"], sample=long_samples)
     #expand("Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.coverage.across.junctions.tsv", ref=config["ref"], sample=short_samples),
     #expand("Summary/{ref}/{sample}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv", ref=config["ref"], sample=long_samples)
-    expand("SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.tsv", ref=config["ref"]),
-    expand("SFS/{ref}/summary/long/{ref}.longreads.freqtable.tsv", ref=config["ref"])
+    #expand("SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.tsv", ref=config["ref"]),
+    #expand("SFS/{ref}/summary/long/{ref}.longreads.freqtable.tsv", ref=config["ref"])
+    #expand("BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam", ref=config["ref"], sample=long_samples)
+    #expand("Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt", ref=config["ref"], sample=long_samples)
+    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam", ref=config["ref"], sample=long_samples)
+    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.sam", ref=config["ref"], sample=long_samples)
+    #expand("Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.AS", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.sorted.AS", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS", ref=config["ref"], sample=long_samples)
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff", ref=config["ref"], sample=long_samples)
+    #expand("RESULTS/{ref}/summary/long/{ref}.summary.long.retrogene.genotypes.tsv", ref=config["ref"])
+    #expand("RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sam", ref=config["ref"], sample=long_samples)
+    expand("RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sorted.bam.bai", ref=config["ref"], sample=long_samples)
 
 #bgzip reference genome
 
@@ -669,76 +682,53 @@ rule merge_bam_genome_long:
 	shell:
 		"samtools merge -@ {threads} -o {output} {input}"
 
-#
-
-#rule minimap2_junctionreads_to_transcriptome:
-#	input:
-#		mmi="Reference/{ref}.rna_from_genomic.pacbio_hifi.mmi",
-#		reads="Junctions/{ref}.longregions.fasta"
-#	output:
-#		"BAMS/{ref}/junction/{ref}.junctionreads.long.transcriptome.sam"
-#	threads: 15
-#	shell:
-#		"minimap2 --eqx -t {threads} -a {input.mmi} {input.reads} > {output}"
-
-#rule find_junctionreads_alignments_long:
-#  input:
-#    junctions="Junctions/{ref}.junctions.tsv",
-#    bam="BAMS/{ref}/junction/{ref}.junctionreads.long.transcriptome.sam"
-#  output:
-#    spanningalignments="Ambiguous/{ref}.ambiguous.long.spanningalignments.sam",
-#    spannedjunctions="Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
-#    flankregions="Flanks/{ref}/junction/{ref}.junction.flankregions.tsv"
-#  params:
-#    scripts=get_scripts
-#  shell:
-#    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
-
-#rule remove_ambiguous_junctions_long:
-#  input:
-#    "Ambiguous/{ref}.ambiguous.long.spannedjunctions.tsv",
-#    "Junctions/{ref}.junctions.tsv"
-#  output:
-#    "Junctions/{ref}.junctions.unambiguous.long.tsv"
-#  params:
-#    scripts=get_scripts
-#  script:
-#    "{params.scripts}/remove_ambiguous_junctions.py"
+#For every spanned junction that is supported by enough reads, get the supporting readnames
 
 rule get_supporting_readnames:
   input:
-    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
+    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
   output:
-    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt"
+    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt"
   params:
     scripts=get_scripts
   script:
     "{params.scripts}/get_supporting_readnames.py"
 
+rule subset_transcriptome_bam:
+  input:
+    reads="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
+    #bam="BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam"
+    bam="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam"
+  output:
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.sam"
+  shell:
+    "samtools view -h -N {input.reads} {input.bam} > {output}"
+
 rule subset_genome_bam:
   input:
-    reads="Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
+    reads="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
     bam="BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam"
   output:
     "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam"
   shell:
-    "samtools view -N {input.reads} {input.bam} > {output}"
+    "samtools view -h -N {input.reads} {input.bam} > {output}"
 
-rule add_geneid_to_subset_sam:
+rule add_geneid_to_subset_sams:
   input:
-    "SFS/{ref}/long/{ref}.longreads.freqtable.tsv",
+    "SFS/{ref}/summary/long/{ref}.longreads.freqtable.tsv",
     "Transcriptome/{ref}.transcriptome.coords.tsv",
-    "Spanned/{ref}/long/{ref}.{sample}.longreads.spanningalignments.sam",
+    "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.sam",
     "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam"
   output:
     "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sam",
     "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam"
   params:
-    scripts=get_scripts
+    scripts=get_scripts,
+    long_samples=long_samples
   script:
     "{params.scripts}/add_geneid_to_subset_sam.py"
 
-rule sort_subset_geneid_sam:
+rule sort_genome_geneid_sam:
   input:
     "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam"
   output:
@@ -771,7 +761,7 @@ rule sort_anchors:
   output:
     "AS/{ref}/{sample}/{ref}.{sample}.genome.sorted.AS"
   shell:
-    "sort -k1,1 -k6,6n -k7,7n {input} > {output}"
+    "cut -f1-9 {input} | sort -k1,1 -k2,2 -k6,6 -k7,7n -k8,8n > {output}"
 
 rule cluster_anchors:
   input:
@@ -804,6 +794,73 @@ rule categorize_AS:
     scripts=get_scripts
   script:
     "{params.scripts}/categorize_AS.py"
+
+#rule summary_short_retrogene_genotypes:
+#  input:
+
+rule summary_long_retrogene_genotypes:
+  input:
+    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.genome.clustered.best.AS.diff", sample=long_samples)
+  output:
+    "RESULTS/{ref}/summary/long/{ref}.summary.long.retrogene.genotypes.tsv"
+  params:
+    scripts=get_scripts,
+    long_samples=long_samples
+  script:
+    "{params.scripts}/summary_retrogene_genotypes.py"
+
+rule final_genome_alignments:
+  input:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff",
+    "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam",
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.AS"
+  output:
+    temp("RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sam")
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/final_genome_alignments.py"
+
+rule bam_final_alignments:
+  input:
+    "RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sam"
+  output:
+    temp("RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.bam")
+  threads: 16
+  shell:
+    "samtools view -@ {threads} -b -o {output} {input}"
+
+rule sort_final_alignments:
+  input:
+    "RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.bam"
+  output:
+    "RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sorted.bam"
+  threads: 16
+  shell:
+    "samtools sort -@ {threads} -o {output} {input}"
+
+rule index_final_alignments:
+  input:
+    "RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sorted.bam"
+  output:
+    "RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sorted.bam.bai"
+  threads: 16
+  shell:
+    "samtools index -@ {threads} {input}"
+
+rule get_retrogene_consensus_sequences:
+  input:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff"
+
+rule sample_long_retrogene_results:
+  input:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff"
+  output:
+    "RESULTS/{ref}/{sample}/long/{ref}.{sample}.long.retrogenes.tsv"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/sample_long_retrogene_results.py"
 
 #rule categorize_AS_summary:
 #  input:

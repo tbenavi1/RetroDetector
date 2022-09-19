@@ -100,12 +100,19 @@ with open(snakemake.input[0], "r") as input_transcript_sam_file:
 		if not line.startswith("@"):
 			geneid, qname, flag, transcript, pos, mapq, cigar = line.strip().split()[:7]
 			geneid_to_transcripts[geneid].add(transcript)
+			pos = int(pos)
 			flag = int(flag)
 			read_start, read_stop = get_read_alignment_positions(cigar)
 			if asbin(flag)[-5] == '1':
 				read_length = query_len(cigar)
 				read_start, read_stop = read_length + 1 - read_start, read_length + 1 - read_stop
-			read_geneid_transcript_to_positions[(qname, geneid, transcript)].append((read_start, read_stop))
+				read_reversed = True
+			else:
+				read_reversed = False
+			transcript_start, transcript_stop = convert_query_to_ref(cigar, read_reversed, pos, read_start, read_stop)
+			if transcript_start > transcript_stop:
+				transcript_start, transcript_stop = transcript_stop, transcript_start
+			read_geneid_transcript_to_positions[(qname, geneid, transcript)].append((read_start, read_stop, transcript_start, transcript_stop))
 
 with open(snakemake.input[1], "r") as input_genome_sam_file, open(snakemake.output[0], "w") as output_file:
 	for line in input_genome_sam_file:
@@ -120,7 +127,7 @@ with open(snakemake.input[1], "r") as input_genome_sam_file, open(snakemake.outp
 			for transcript in geneid_to_transcripts[geneid]:
 				read_positions = read_geneid_transcript_to_positions[(qname, geneid, transcript)]
 				for read_position in read_positions:
-					read_start, read_stop = read_position
+					read_start, read_stop, transcript_start, transcript_stop = read_position
 					if asbin(flag)[-5] == '1':
 						read_reversed = True
 					else:
@@ -128,4 +135,4 @@ with open(snakemake.input[1], "r") as input_genome_sam_file, open(snakemake.outp
 					ref_start, ref_stop = convert_query_to_ref(cigar, read_reversed, pos, read_start, read_stop)
 					if ref_start > ref_stop:
 						ref_start, ref_stop = ref_stop, ref_start
-					output_file.write(f"{geneid}\t{transcript}\t{qname}\t{read_start}\t{read_stop}\t{chrom}\t{ref_start}\t{ref_stop}\t{AS}\t{line}")
+					output_file.write(f"{geneid}\t{transcript}\t{qname}\t{read_start}\t{read_stop}\t{transcript}\t{transcript_start}\t{transcript_stop}\t{chrom}\t{ref_start}\t{ref_stop}\t{AS}\t{line}")

@@ -25,7 +25,12 @@ num_retrogenes = 0
 with open(snakemake.input[0], "r") as input_file:
 	for line in input_file:
 		num_retrogenes += 1
-		geneid, transcript_location, region = line.strip().split()
+		geneid, transcript_location, region, direction = line.strip().split()
+		if direction == "forward":
+			option = ""
+		else:
+			assert direction == "reverse", line
+			option = " --reverse-complement"
 		#output_name = output_name_prefix + geneid + output_name_suffix
 		output_transcript_fasta = output_transcript_prefix + geneid + output_transcript_suffix
 		consensus_fasta = consensus_prefix + geneid + consensus_suffix
@@ -33,7 +38,7 @@ with open(snakemake.input[0], "r") as input_file:
 		#with open(output_name, "w") as output_name_file:
 		#	output_name_file.write(f"{transcript}\n")
 		#subprocess.run(f"seqtk subseq {transcriptome} {output_name} > {output_transcript_fasta}", shell=True)
-		subprocess.run(f"samtools faidx {transcriptome} '{transcript_location}' -o {output_transcript_fasta}", shell=True)
+		subprocess.run(f"samtools faidx {transcriptome} '{transcript_location}' -o {output_transcript_fasta}{option}", shell=True)
 		subprocess.run(f"needle -asequence {output_transcript_fasta} -bsequence {consensus_fasta} -gapopen 10.0 -gapextend 0.5 -outfile {output_needle}", shell=True)
 
 with open(output, "w") as output_file:

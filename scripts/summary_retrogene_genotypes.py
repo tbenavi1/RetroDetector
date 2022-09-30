@@ -8,7 +8,7 @@ geneid_to_samples = defaultdict(set)
 for i, sample in enumerate(long_samples):
 	with open(snakemake.input[i], "r") as input_AS_file:
 		for line in input_AS_file:
-			geneid, transcript, anchor_range = line.strip().split()
+			geneid, transcript, anchor_range, direction = line.strip().split()
 			geneids.add(geneid)
 			geneid_to_samples[geneid].add(sample)
 

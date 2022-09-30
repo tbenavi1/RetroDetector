@@ -73,7 +73,14 @@ rule all:
     #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff", ref=config["ref"], sample=long_samples)
     #expand("RESULTS/{ref}/summary/long/{ref}.summary.long.retrogene.genotypes.tsv", ref=config["ref"])
     #expand("RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sam", ref=config["ref"], sample=long_samples)
-    expand("RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sorted.bam.bai", ref=config["ref"], sample=long_samples)
+    #expand("RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sorted.bam.bai", ref=config["ref"], sample=long_samples)
+    #expand("RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene.consensus.txt", ref=config["ref"], sample=long_samples)
+    #"RESULTS/ncbi_dsan/1300_13/long/consensus/ncbi_dsan.1300_13.retrogene.consensus.txt"
+    #expand("RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.transcript.fastas.txt", ref=config["ref"], sample=long_samples)
+    "RESULTS/ncbi_dsan/1300_13/long/consensus/ncbi_dsan.1300_13.transcript.fastas.txt"
+    #"AS/ncbi_dsan/1300_13/ncbi_dsan.1300_13.genome.AS"
+    #expand("Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.txt", ref=config["ref"], sample=long_samples)
+    #"AS/ncbi_dsan/1300_13/ncbi_dsan.1300_13.genome.clustered.AS"
 
 #bgzip reference genome
 
@@ -561,6 +568,7 @@ rule find_longreads_alignments:
     bam="BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam"
   output:
     spanningalignments="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam",
+    spanningalignmentstxt="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.txt",
     spannedjunctions="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
     flankregions="Flanks/{ref}/{sample}/long/{ref}.{sample}.longreads.flankregions.tsv"
   params:
@@ -568,7 +576,7 @@ rule find_longreads_alignments:
     junction_overhang=config["junction_overhang"],
     insertions_threshold=config["insertions_threshold"]
   shell:
-    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {output.spanningalignments} {output.spannedjunctions} {output.flankregions}"
+    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {output.spanningalignments} {output.spanningalignmentstxt} {output.spannedjunctions} {output.flankregions}"
 
 #Summarize alignments of real short and long reads
 
@@ -684,25 +692,38 @@ rule merge_bam_genome_long:
 
 #For every spanned junction that is supported by enough reads, get the supporting readnames
 
-rule get_supporting_readnames:
-  input:
-    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
-  output:
-    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt"
-  params:
-    scripts=get_scripts
-  script:
-    "{params.scripts}/get_supporting_readnames.py"
+#rule get_supporting_readnames:
+#  input:
+#    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv"
+#  output:
+#    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt"
+#  params:
+#    scripts=get_scripts
+#  script:
+#    "{params.scripts}/get_supporting_readnames.py"
+
+#rule subset_transcriptome_bam:
+#  input:
+#    reads="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
+#    #bam="BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam"
+#    bam="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam"
+#  output:
+#    "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.sam"
+#  shell:
+#    "samtools view -h -N {input.reads} {input.bam} > {output}"
 
 rule subset_transcriptome_bam:
   input:
-    reads="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
-    #bam="BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam"
-    bam="Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam"
+    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
+    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam",
+    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.txt"
   output:
+    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
     "Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.sam"
-  shell:
-    "samtools view -h -N {input.reads} {input.bam} > {output}"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/subset_transcriptome_bam.py"
 
 rule subset_genome_bam:
   input:
@@ -761,7 +782,7 @@ rule sort_anchors:
   output:
     "AS/{ref}/{sample}/{ref}.{sample}.genome.sorted.AS"
   shell:
-    "cut -f1-9 {input} | sort -k1,1 -k2,2 -k6,6 -k7,7n -k8,8n > {output}"
+    "cut -f1-13 {input} | sort -k1,1 -k2,2 -k9,9 -k10,10n -k11,11n > {output}"
 
 rule cluster_anchors:
   input:
@@ -850,7 +871,27 @@ rule index_final_alignments:
 
 rule get_retrogene_consensus_sequences:
   input:
-    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff"
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff",
+    "RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sorted.bam",
+    "RESULTS/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supporting_alignments.genome.sorted.bam.bai"
+  output:
+    "RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene.consensus.txt"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/get_retrogene_consensus_sequences.py"
+
+rule get_retrogene_transcript_fastas:
+  input:
+    "AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff",
+    "Reference/{ref}.rna_from_genomic.fna.gz",
+    "RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene.consensus.txt"
+  output:
+    "RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.transcript.fastas.txt"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/get_retrogene_transcript_fastas.py"
 
 rule sample_long_retrogene_results:
   input:

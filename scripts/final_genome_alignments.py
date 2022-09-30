@@ -8,7 +8,7 @@ retrogene_locations = []
 
 with open(snakemake.input[0], "r") as input_AS_file:
 	for line in input_AS_file:
-		geneID, transcript_location, anchor_range = line.strip().split()
+		geneID, transcript_location, anchor_range, direction = line.strip().split()
 		transcript = transcript_location.split(":")[0]
 		chrom, anchor_span = anchor_range.split(":")
 		start, stop = anchor_span.split("-")
@@ -27,5 +27,5 @@ with open(snakemake.input[2], "r") as input_as_sam_file, open(snakemake.output[0
 		geneid, transcript, readname, read_start, read_stop, _, transcript_start, transcript_stop, chrom, ref_start, ref_stop = line.strip().split()[:11]
 		ref_start, ref_stop = int(ref_start), int(ref_stop)
 		if is_supporting_alignment(transcript, chrom, ref_start, ref_stop, retrogene_locations):
-			alignment = "\t".join(line.strip().split()[13:])
+			alignment = "\t".join(line.strip().split()[14:])
 			output_sam_file.write(f"{alignment}\n")

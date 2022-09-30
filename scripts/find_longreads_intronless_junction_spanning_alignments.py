@@ -116,7 +116,7 @@ with open(sys.argv[3], "r") as input_junctions_file:
 		transcript_to_junctions[transcript] = junctions
 		transcript_to_geneid[transcript] = geneid
 
-with open(sys.argv[4], "w") as output_spanningalignments_file, open(sys.argv[5], "w") as output_spannedjunctions_file, open(sys.argv[6], "w") as output_flankregions_file:
+with open(sys.argv[4], "w") as output_spanningalignments_file, open(sys.argv[5], "w") as output_spanningalignments_txtfile, open(sys.argv[6], "w") as output_spannedjunctions_file, open(sys.argv[7], "w") as output_flankregions_file:
 	for line in sys.stdin:
 		if line.startswith("@"):
 			output_spanningalignments_file.write(line)
@@ -128,6 +128,7 @@ with open(sys.argv[4], "w") as output_spanningalignments_file, open(sys.argv[5],
 				geneid = transcript_to_geneid[transcript]
 				cigar_ref_len = ref_len(cigar)
 				is_supporting_alignment = False
+				spanned_junctions = []
 				for junction in junctions:
 					junction = int(junction)
 					#if there is an alignment that spans junction_overhang base pairs on both sides of junction
@@ -138,8 +139,11 @@ with open(sys.argv[4], "w") as output_spanningalignments_file, open(sys.argv[5],
 						if is_intronless(region_cigar, insertions_threshold):
 							output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{junction}\t{readname}\n")
 							is_supporting_alignment = True
+							spanned_junctions.append(str(junction))
 				if is_supporting_alignment:
 					output_spanningalignments_file.write(line)
+					spanned_junctions = ",".join(spanned_junctions)
+					output_spanningalignments_txtfile.write(f"{geneid}\t{transcript}\t{spanned_junctions}\t{line}")
 					flank_regions = get_flank_regions(cigar)
 					for flank_region in flank_regions:
 						read_flank = f"{readname}:{flank_region}"

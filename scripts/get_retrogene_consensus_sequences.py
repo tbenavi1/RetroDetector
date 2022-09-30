@@ -13,7 +13,7 @@ num_retrogenes = 0
 with open(input_diff, "r") as input_file:
 	for line in input_file:
 		num_retrogenes += 1
-		geneid, transcript, region = line.strip().split()
+		geneid, transcript, region, direction = line.strip().split()
 		output_fasta = output_fasta_prefix + geneid + output_fasta_suffix
 		subprocess.run(f"samtools consensus -r {region} -o {output_fasta} {input_bam}", shell=True)
 

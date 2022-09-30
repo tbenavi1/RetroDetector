@@ -135,4 +135,7 @@ with open(snakemake.input[1], "r") as input_genome_sam_file, open(snakemake.outp
 					ref_start, ref_stop = convert_query_to_ref(cigar, read_reversed, pos, read_start, read_stop)
 					if ref_start > ref_stop:
 						ref_start, ref_stop = ref_stop, ref_start
-					output_file.write(f"{geneid}\t{transcript}\t{qname}\t{read_start}\t{read_stop}\t{transcript}\t{transcript_start}\t{transcript_stop}\t{chrom}\t{ref_start}\t{ref_stop}\t{AS}\t{line}")
+						direction = "reverse"
+					else:
+						direction = "forward"
+					output_file.write(f"{geneid}\t{transcript}\t{qname}\t{read_start}\t{read_stop}\t{transcript}\t{transcript_start}\t{transcript_stop}\t{chrom}\t{ref_start}\t{ref_stop}\t{AS}\t{direction}\t{line}")

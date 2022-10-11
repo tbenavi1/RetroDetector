@@ -131,6 +131,9 @@ with open(sys.argv[4], "w") as output_spanningalignments_file, open(sys.argv[5],
 				spanned_junctions = []
 				for junction in junctions:
 					junction = int(junction)
+					if readname == "m54312U_200609_003726/54854405/ccs" and junction == 1782:
+						print(f"pos is {pos}")
+						print(f"cigar_ref_len is {cigar_ref_len}")
 					#if there is an alignment that spans junction_overhang base pairs on both sides of junction
 					if pos + junction_overhang - 1 <= junction <= pos + cigar_ref_len - junction_overhang:
 						region_cigar = subset_cigar_string(cigar, pos, junction - junction_overhang + 1, junction + junction_overhang)

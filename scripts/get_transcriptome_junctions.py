@@ -1,6 +1,6 @@
 import gzip
 
-with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemake.output[0], "w") as output_coords_file, open(snakemake.output[1], "w") as output_junctions_file, open(snakemake.output[2], "w") as output_introns_file, open(snakemake.output[3], "w") as output_shortregions_file, open(snakemake.output[4], "w") as output_longregions_file:
+with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemake.output[0], "w") as output_coords_file, open(snakemake.output[1], "w") as output_junctions_file, open(snakemake.output[2], "w") as output_introns_file, open(snakemake.output[3], "w") as output_intronlengths_file, open(snakemake.output[4], "w") as output_shortregions_file, open(snakemake.output[5], "w") as output_longregions_file:
 	for line in input_transcript_file:
 		if line.startswith(">"):
 			transcript = line.strip().split(" ")[0][1:]
@@ -65,12 +65,15 @@ with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemak
 			junctions = []
 			ref_junctions = []
 			ref_introns = []
+			ref_intronlengths = []
 			current_length = 0
 			for i, (start, stop) in enumerate(startstops):
 				if i > 0:
 					ref_junctions.append(start - 1)
 					previous_stop = startstops[i-1][1]
 					ref_introns.append(f"{previous_stop+1}-{start-1}")
+					intron_length = start - previous_stop - 1
+					ref_intronlengths.append(intron_length)
 				if i < num_exons - 1:
 					ref_junctions.append(stop)
 				dist = stop - start + 1
@@ -83,6 +86,11 @@ with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemak
 			if ranges.startswith("complement"):
 				junctions = [current_length - junction for junction in reversed(junctions)]
 				ref_introns = reversed(ref_introns)
+				#ref_intronlengths = reversed(ref_intronlengths)
+				ref_intronlengths.reverse()
+			for i, junction in enumerate(junctions):
+				intron_length = ref_intronlengths[i]
+				output_intronlengths_file.write(f"{GeneID}\t{transcript}\t{junction}\t{intron_length}\n")
 			junctions = "\t".join(str(junction) for junction in junctions)
 			ref_introns = "\t".join(f"{chrom}:{ref_intron}" for ref_intron in ref_introns)
 			output_junctions_file.write(f"{GeneID}\t{transcript}\t{junctions}\n")

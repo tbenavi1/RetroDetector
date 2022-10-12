@@ -1,6 +1,6 @@
 import gzip
 
-with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemake.output[0], "w") as output_coords_file, open(snakemake.output[1], "w") as output_junctions_file, open(snakemake.output[2], "w") as output_introns_file, open(snakemake.output[3], "w") as output_intronlengths_file, open(snakemake.output[4], "w") as output_shortregions_file, open(snakemake.output[5], "w") as output_longregions_file:
+with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemake.output[0], "w") as output_coords_file, open(snakemake.output[1], "w") as output_junctions_file, open(snakemake.output[2], "w") as output_introns_file, open(snakemake.output[3], "w") as output_intronlengths_file, open(snakemake.output[4], "w") as output_longregions_file:
 	for line in input_transcript_file:
 		if line.startswith(">"):
 			transcript = line.strip().split(" ")[0][1:]
@@ -96,21 +96,21 @@ with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemak
 			output_junctions_file.write(f"{GeneID}\t{transcript}\t{junctions}\n")
 			output_introns_file.write(f"{GeneID}\t{transcript}\t{ref_introns}\n")
 			for ref_junction in ref_junctions:
-				short_start = ref_junction - 74
-				short_stop = ref_junction + 75
-				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
-				short_start = ref_junction - 129
-				short_stop = ref_junction + 20
-				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
-				short_start = ref_junction - 19
-				short_stop = ref_junction + 130
-				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
-				short_start = ref_junction - 139
-				short_stop = ref_junction + 10
-				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
-				short_start = ref_junction - 9
-				short_stop = ref_junction + 140
-				output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				#short_start = ref_junction - 74
+				#short_stop = ref_junction + 75
+				#output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				#short_start = ref_junction - 129
+				#short_stop = ref_junction + 20
+				#output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				#short_start = ref_junction - 19
+				#short_stop = ref_junction + 130
+				#output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				#short_start = ref_junction - 139
+				#short_stop = ref_junction + 10
+				#output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
+				#short_start = ref_junction - 9
+				#short_stop = ref_junction + 140
+				#output_shortregions_file.write(f"{chrom}:{short_start}-{short_stop}\n")
 				long_start = max(ref_junction - 4999, 1)
 				long_stop = ref_junction + 5000
 				output_longregions_file.write(f"{chrom}:{long_start}-{long_stop}\n")

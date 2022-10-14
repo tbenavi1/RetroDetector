@@ -6,7 +6,7 @@ dist_threshold = 10000
 GeneID_to_location = {}
 with open(snakemake.input[-1], "r") as input_coords_file:
 	for line in input_coords_file:
-		transcript, GeneID, chrom, start, stop = line.strip().split()
+		GeneID, transcript, chrom, start, stop = line.strip().split()
 		#for flybase_dyak
 		if "-" in GeneID:
 			GeneID = GeneID.split("-")[0]
@@ -25,7 +25,7 @@ for i in range(num_samples):
 	geneid_to_best_AS = {}
 	with open(snakemake.input[i], "r") as input_AS_file:
 		for line in input_AS_file:
-			geneid, anchor_range, anchor_AS = line.strip().split()
+			geneid, transcript_range, anchor_range, anchor_AS, strand = line.strip().split()
 			if geneid not in geneid_to_cluster_found:
 				geneid_to_cluster_found[geneid] = False
 			if geneid not in geneid_to_best_AS:

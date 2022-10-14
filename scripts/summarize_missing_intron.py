@@ -13,7 +13,7 @@ geneid_intron_to_percents = defaultdict(list)
 with open(snakemake.input[1], "r") as input_intron_file:
 	for line in input_intron_file:
 		if not line.startswith("Read"):
-			geneid, readname, transcript, intron, missing_percent, cigar = line.strip().split()
+			geneid, transcript, intron, readname, missing_percent, cigar = line.strip().split()
 			if geneid in geneids:
 				missing_percent = float(missing_percent)
 				geneid_intron_to_percents[(geneid, intron)].append(missing_percent)

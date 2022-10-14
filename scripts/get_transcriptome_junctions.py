@@ -1,6 +1,6 @@
 import gzip
 
-with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemake.output[0], "w") as output_coords_file, open(snakemake.output[1], "w") as output_junctions_file, open(snakemake.output[2], "w") as output_introns_file, open(snakemake.output[3], "w") as output_intronlengths_file, open(snakemake.output[4], "w") as output_longregions_file:
+with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemake.output[0], "w") as output_coords_file, open(snakemake.output[1], "w") as output_junctions_file, open(snakemake.output[2], "w") as output_introns_file, open(snakemake.output[3], "w") as output_intronlengths_file, open(snakemake.output[4], "w") as output_longregions_file, open(snakemake.output[5], "w") as output_longregiontranscripts_file:
 	for line in input_transcript_file:
 		if line.startswith(">"):
 			transcript = line.strip().split(" ")[0][1:]
@@ -114,9 +114,12 @@ with gzip.open(snakemake.input[0], "rt") as input_transcript_file, open(snakemak
 				long_start = max(ref_junction - 4999, 1)
 				long_stop = ref_junction + 5000
 				output_longregions_file.write(f"{chrom}:{long_start}-{long_stop}\n")
+				output_longregiontranscripts_file.write(f"{transcript}\n")
 				long_start = max(ref_junction - 9899, 1)
 				long_stop = ref_junction + 100
 				output_longregions_file.write(f"{chrom}:{long_start}-{long_stop}\n")
+				output_longregiontranscripts_file.write(f"{transcript}\n")
 				long_start = max(ref_junction - 99, 1)
 				long_stop = ref_junction + 9900
 				output_longregions_file.write(f"{chrom}:{long_start}-{long_stop}\n")
+				output_longregiontranscripts_file.write(f"{transcript}\n")

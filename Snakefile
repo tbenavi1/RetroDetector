@@ -48,7 +48,16 @@ rule all:
     #expand("BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam", ref=config["ref"], sample=long_samples),
     #expand("BAMS/{ref}/{sample}/genome/short_paired_end/{ref}.{sample}.genome.short.sorted.bam", ref=config["ref"], sample=short_samples),
     #expand("BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam", ref=config["ref"], sample=long_samples)
-    expand("Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.overlapping.genes.tsv", ref=config["ref"], sample=["1300_13"])
+    #expand("Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.overlapping.genes.tsv", ref=config["ref"], sample=["1300_13"])
+    #expand("Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spannedjunctions.tsv", ref=config["ref"], sample=["1300_13"])
+    #expand("Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.numspannedjunctions.tsv", ref=config["ref"], sample=["1300_13"])
+    #expand("Junctions/{ref}.synthetic.longreads.fasta", ref=config["ref"])
+    #expand("Junctions/{ref}.junctions.unambiguous.long.tsv", ref=config["ref"])
+    #expand("Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv", ref=config["ref"], sample=["1300_13"])
+    #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff", ref=config["ref"], sample=["1300_13"])
+    #expand("RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.transcript.fastas.txt", ref=config["ref"], sample=["1300_13"])
+    #expand("Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent", ref=config["ref"], sample=["1300_13"])
+    expand("Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary", ref=config["ref"], sample=["1300_13"])
 
 #bgzip reference genome
 
@@ -243,7 +252,8 @@ rule get_transcriptome_junctions:
     "Junctions/{ref}.junctions.tsv",
     "Junctions/{ref}.introns.tsv",
     "Junctions/{ref}.intron_lengths.tsv",
-    "Junctions/{ref}.synthetic.longregions.txt"
+    "Junctions/{ref}.synthetic.longregions.txt",
+    "Junctions/{ref}.synthetic.longregiontranscripts.txt"
   params:
     scripts=get_scripts
   script:
@@ -258,9 +268,20 @@ rule get_synthetic_fasta_long:
     ref="Reference/{ref}.genomic.fna.gz",
     regions="Junctions/{ref}.synthetic.longregions.txt"
   output:
-    "Junctions/{ref}.synthetic.longreads.fasta"
+    "Junctions/{ref}.synthetic.temp.longreads.fasta"
   shell:
     "samtools faidx {input.ref} -r {input.regions} > {output}"
+
+rule add_transcript_synthetic_fasta_long:
+  input:
+    "Junctions/{ref}.synthetic.longregiontranscripts.txt",
+    "Junctions/{ref}.synthetic.temp.longreads.fasta"
+  output:
+    "Junctions/{ref}.synthetic.longreads.fasta"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/add_transcript_synthetic_fasta_long.py"
 
 #Map synthetic long reads to transcriptome
 
@@ -310,7 +331,7 @@ rule find_synthetic_long_alignments:
     junction_overhang=config["junction_overhang"],
     insertions_threshold=config["insertions_threshold"]
   shell:
-    "samtools view -h {input.bam} | python {params.scripts}/find_longreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {output.spanningalignments} {output.spanningalignmentstxt} {output.spannedjunctions} {output.flankregions}"
+    "samtools view -h {input.bam} | python {params.scripts}/find_synthetic_longreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {output.spanningalignments} {output.spanningalignmentstxt} {output.spannedjunctions} {output.flankregions}"
 
 #Remove ambiguous junctions (based on alignments of synthetic long reads)
 
@@ -579,6 +600,7 @@ rule find_shortreads_alignments:
     junctions="Junctions/{ref}.junctions.tsv",
     longjunctions="Junctions/{ref}.longjunctions.tsv",
     intronlengths="Junctions/{ref}.intron_lengths.tsv",
+    overlapping="Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.overlapping.genes.tsv",
     bam="BAMS/{ref}/{sample}/transcriptome/short_paired_end/{ref}.{sample}.transcriptome.short.sorted.bam"
   output:
     spanningalignments="Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spanningalignments.sam",
@@ -588,7 +610,7 @@ rule find_shortreads_alignments:
     junction_overhang=config["junction_overhang"],
     insertions_threshold=config["insertions_threshold"]
   shell:
-    "samtools view -h {input.bam} | python {params.scripts}/find_shortreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {input.longjunctions} {input.intronlengths} {output.spanningalignments} {output.spannedjunctions}"
+    "samtools view -h {input.bam} | python {params.scripts}/find_shortreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {input.longjunctions} {input.intronlengths} {input.overlapping} {output.spanningalignments} {output.spannedjunctions}"
 
 rule find_longreads_alignments:
   input:
@@ -871,25 +893,25 @@ rule sample_long_retrogene_results:
   script:
     "{params.scripts}/sample_long_retrogene_results.py"
 
-#rule categorize_AS_summary:
-#  input:
-#    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.genome.clustered.AS", sample=long_samples),
-#    "Transcriptome/{ref}.transcriptome.coords.tsv"
-#  output:
-#    "AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt",
-#    "AS/{ref}/SUMMARY/{ref}.SUMMARY.allsame.txt",
-#    "AS/{ref}/SUMMARY/{ref}.SUMMARY.somediffsomesame.txt"
-#  params:
-#    scripts=get_scripts
-#  script:
-#    "{params.scripts}/categorize_AS_summary.py"
+rule categorize_AS_summary:
+  input:
+    expand("AS/{{ref}}/{sample}/{{ref}}.{sample}.genome.clustered.AS", sample=long_samples),
+    "Transcriptome/{ref}.transcriptome.coords.tsv"
+  output:
+    "AS/{ref}/SUMMARY/{ref}.SUMMARY.alldiff.txt",
+    "AS/{ref}/SUMMARY/{ref}.SUMMARY.allsame.txt",
+    "AS/{ref}/SUMMARY/{ref}.SUMMARY.somediffsomesame.txt"
+  params:
+    scripts=get_scripts
+  script:
+    "{params.scripts}/categorize_AS_summary.py"
 
 rule get_GeneID_introns:
   input:
-    "Summary/{ref}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv",
+    "Summary/{ref}/{sample}/long/{ref}.{sample}.longreads.coverage.across.junctions.tsv",
     "Junctions/{ref}.introns.tsv"
   output:
-    "Analysis/{ref}/{sample}/{ref}.{sample}.introns"
+    "Analysis/{ref}/{sample}/long/{ref}.{sample}.introns"
   params:
     scripts=get_scripts
   script:
@@ -897,8 +919,8 @@ rule get_GeneID_introns:
 
 rule missing_intron_percent:
   input:
-    "Analysis/{ref}/{sample}/{ref}.{sample}.introns",
-    "Spanned/{ref}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
+    "Analysis/{ref}/{sample}/long/{ref}.{sample}.introns",
+    "Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
     "Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam"
   output:
     "Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent"

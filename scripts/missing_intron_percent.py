@@ -65,12 +65,14 @@ readname_to_introns = defaultdict(set)
 intron_to_transcripts = defaultdict(set)
 with open(snakemake.input[1], "r") as input_spannedjunctions_file:
 	for line in input_spannedjunctions_file:
-		transcript, junction, readname = line.strip().split()
+		geneie, transcript, junction, readname = line.strip().split()
 		if (transcript, junction) in transcript_junction_to_intron:
 			chrom = "_".join(transcript.split("|")[1].split("_")[:2])
 			intron = transcript_junction_to_intron[(transcript, junction)]
-			readname_to_introns[readname].add(f"{chrom}:{intron}")
-			intron_to_transcripts[f"{chrom}:{intron}"].add(transcript)
+			#readname_to_introns[readname].add(f"{chrom}:{intron}")
+			readname_to_introns[readname].add(intron)
+			#intron_to_transcripts[f"{chrom}:{intron}"].add(transcript)
+			intron_to_transcripts[intron].add(transcript)
 
 def cigar_missing_percent(cigar):
 	consumes_ref = {"M", "D", "N", "=", "X"}
@@ -105,6 +107,6 @@ with open(snakemake.input[2], "r") as input_subsetsam_file, open(snakemake.outpu
 						region_cigar = subset_cigar_string(cigar, pos, intron_start, intron_stop)
 						missing_percent = cigar_missing_percent(region_cigar)
 						for transcript in transcripts:
-							output_file.write(f"{geneid}\t{readname}\t{transcript}\t{intron}\t{missing_percent}\t{region_cigar}\n")
+							output_file.write(f"{geneid}\t{transcript}\t{intron}\t{readname}\t{missing_percent}\t{region_cigar}\n")
 					else:
 						output_file.write("Read doesn't span across entire intron.\n")

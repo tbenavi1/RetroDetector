@@ -57,7 +57,9 @@ rule all:
     #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff", ref=config["ref"], sample=["1300_13"])
     #expand("RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.transcript.fastas.txt", ref=config["ref"], sample=["1300_13"])
     #expand("Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent", ref=config["ref"], sample=["1300_13"])
-    expand("Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary", ref=config["ref"], sample=["1300_13"])
+    #expand("Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary", ref=config["ref"], sample=["1300_13"])
+    #expand("SFS/{ref}/summary/long/{ref}.longreads.freqtable.multiplyspanned.tsv", ref=config["ref"])
+    expand("SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.multiplyspanned.tsv", ref=config["ref"])
 
 #bgzip reference genome
 
@@ -601,6 +603,7 @@ rule find_shortreads_alignments:
     longjunctions="Junctions/{ref}.longjunctions.tsv",
     intronlengths="Junctions/{ref}.intron_lengths.tsv",
     overlapping="Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.overlapping.genes.tsv",
+    coverages="test.coverage",
     bam="BAMS/{ref}/{sample}/transcriptome/short_paired_end/{ref}.{sample}.transcriptome.short.sorted.bam"
   output:
     spanningalignments="Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spanningalignments.sam",
@@ -610,7 +613,7 @@ rule find_shortreads_alignments:
     junction_overhang=config["junction_overhang"],
     insertions_threshold=config["insertions_threshold"]
   shell:
-    "samtools view -h {input.bam} | python {params.scripts}/find_shortreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {input.longjunctions} {input.intronlengths} {input.overlapping} {output.spanningalignments} {output.spannedjunctions}"
+    "samtools view -h {input.bam} | python {params.scripts}/find_shortreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {input.longjunctions} {input.intronlengths} {input.overlapping} {input.coverages} {output.spanningalignments} {output.spannedjunctions}"
 
 rule find_longreads_alignments:
   input:
@@ -640,7 +643,7 @@ rule summarize_alignments_short:
   params:
     scripts=get_scripts
   script:
-    "{params.scripts}/summarize_spanned_junctions.py"
+    "{params.scripts}/summarize_spanned_junctions_short.py"
 
 rule summarize_alignments_long:
   input:

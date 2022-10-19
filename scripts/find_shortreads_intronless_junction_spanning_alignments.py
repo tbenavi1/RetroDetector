@@ -81,6 +81,16 @@ def is_intronless(cigar, allowed_insertions = 10):
 				return False
 	return True
 
+def get_num_matches(cigar):
+	num_matches = 0
+	X = re.finditer("(\d+)([MIDNSHPX=])", cigar)
+	for block in X:
+		cigar_digits = int(block.group(1))
+		cigar_operation = block.group(2)
+		if cigar_operation == "M":
+			num_matches += cigar_digits
+	return num_matches
+
 def get_flank_lengths(cigar, side):
 	flank_ops = {"S", "H"}
 	query_ops = {"M", "I", "=", "X"}
@@ -149,11 +159,21 @@ with open(sys.argv[6], "r") as input_overlapping_file:
 		geneid, transcript, *reads = line.strip().split()
 		transcript_to_overlappingreads[transcript] = set(reads)
 
+crappy_transcripts = set()
+with open(sys.argv[7], "r") as input_coverages_file:
+	for line in input_coverages_file:
+		if not line.startswith("#"):
+			rname, startpos, endpos, numreads, covbases, coverage, meandepth, meanbaseq, meanmapq = line.strip().split()
+			meandepth, meanmapq = float(meandepth), float(meanmapq)
+			#if meandepth > 75.0 or meanmapq < 20.0:
+			if meandepth > 75.0:
+				crappy_transcripts.add(rname)
+
 read_to_alignment = {}
 
 #test = 0
 #readname = ""
-with open(sys.argv[7], "w") as output_spanningalignments_file, open(sys.argv[8], "w") as output_spannedjunctions_file, open("true_postiives.txt", "w") as output_truepositives_file:
+with open(sys.argv[8], "w") as output_spanningalignments_file, open(sys.argv[9], "w") as output_spannedjunctions_file, open("true_postiives.txt", "w") as output_truepositives_file:
 	for line in sys.stdin:
 		if line.startswith("@"):
 			output_spanningalignments_file.write(line)
@@ -162,11 +182,17 @@ with open(sys.argv[7], "w") as output_spanningalignments_file, open(sys.argv[8],
 			#	print("o")
 			#	print(line)
 			readname, flag, transcript, pos, _, cigar, _, pnext, tlen = line.strip().split()[:9]
+			#if readname == "K00282:232:HN2CLBBXX:6:2209:17320:18388":
+			#	print("hello")
 			#overlapping_reads = transcript_to_overlappingreads[transcript]
 			#if this alignment is a false positive because it maps to the parent gene
+			is_overlapping_read = False
 			if transcript in transcript_to_overlappingreads and readname in transcript_to_overlappingreads[transcript]:
 				#go to next read
-				continue #changed break to continue
+				is_overlapping_read = True
+				#continue #changed break to continue
+			#if readname == "K00282:232:HN2CLBBXX:6:2209:17320:18388":
+			#	print("hello")
 			#test += 1
 			#print(test)
 			#print(line)
@@ -174,14 +200,14 @@ with open(sys.argv[7], "w") as output_spanningalignments_file, open(sys.argv[8],
 			pnext = int(pnext)
 			flag = int(flag)
 			tlen = abs(int(tlen))
-			if transcript in transcript_to_junctions:
+			if not is_overlapping_read and transcript in transcript_to_junctions and not transcript in crappy_transcripts:
 				#if readname == "K00282:232:HN2CLBBXX:6:1212:25784:42267":
 				#	print("a")
 				junctions = transcript_to_junctions[transcript]
 				geneid = transcript_to_geneid[transcript]
 				is_supporting_alignment = False
 				#if this read is part of a proper pair, and it is not a supplementary alignment
-				if asbin(flag)[-2] == '1' and asbin(flag)[-12] == '0':
+				if asbin(flag)[-2] == '1' and asbin(flag)[-12] == '0' and 215 <= tlen <= 485:
 					#if readname == "K00282:232:HN2CLBBXX:6:1212:25784:42267":
 					#	print("b")
 					optional_fields = line.strip().split()[11:]
@@ -191,56 +217,72 @@ with open(sys.argv[7], "w") as output_spanningalignments_file, open(sys.argv[8],
 							has_MC = True
 							cigar_next = optional_field[5:]
 					assert has_MC, line
-					if pos <= pnext:
-						start = pos
-						cigar_ref_len = ref_len(cigar_next)
-						stop = pnext + cigar_ref_len - 1
-						left_overhang = get_flank_lengths(cigar, "left")
-						right_overhang = get_flank_lengths(cigar_next, "right")
-					else:
-						start = pnext
-						cigar_ref_len = ref_len(cigar)
-						stop = pos + cigar_ref_len - 1
-						left_overhang = get_flank_lengths(cigar_next, "left")
-						right_overhang = get_flank_lengths(cigar, "right")
-					spanned_junctions = []
-					total_spanned_intron_length = 0
-					long_junctions = transcript_to_longjunctions[transcript]
-					is_true_positive = False
-					#if readname == "K00282:232:HN2CLBBXX:6:1212:25784:42267":
-					#	print("c")
-					for junction in junctions:
-						junction = int(junction)
-						#if there is an paired alignment that spans junction_overhang base pairs on both sides of junction
-						if start + junction_overhang - 1 <= junction <= stop - junction_overhang:
-							spanned_junctions.append(junction)
-							if str(junction) in long_junctions:
-								is_true_positive = True
-							spanned_intron_length = transcript_junction_to_intron_length[(transcript, junction)]
-							total_spanned_intron_length += spanned_intron_length
-							#output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{junction}\t{readname}\n")
-							#is_supporting_alignment = True
-					expected_genome_tlen = tlen + left_overhang + total_spanned_intron_length + right_overhang
-					if is_true_positive:
-						output_truepositives_file.write(f"{geneid}\t{transcript}\t{tlen}\t{expected_genome_tlen}\t{left_overhang}\t{total_spanned_intron_length}\t{right_overhang}\t{line}")
-					#if readname == "K00282:232:HN2CLBBXX:6:1125:30837:12234":
-					#if readname == "K00282:232:HN2CLBBXX:6:1102:18609:37361":
-					#if readname == "K00282:232:HN2CLBBXX:6:1105:11129:8084":
-					if readname == "K00282:232:HN2CLBBXX:6:2123:28148:13763":
-						print(f"tlen is {tlen}")
-						print(f"left overhang is {left_overhang}")
-						print(f"total spanned intron length is {total_spanned_intron_length}")
-						print(f"right overhang is {right_overhang}")
-						print(f"expected genome tlen is {expected_genome_tlen}")
-					#if there was a spanned junction, and the transcript tlen is closer to insert size than expected genome tlen
-					#if total_spanned_intron_length > 0 and abs(tlen - insert_size) < abs(expected_genome_tlen - insert_size):
-					#if there was a spanned junction
-					if spanned_junctions:
-						is_supporting_alignment = True
-						#if this is the first read in the pair
-						if asbin(flag)[-7] == '1':
-							for spanned_junction in spanned_junctions:
-								output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{spanned_junction}\t{readname}\n")
+					num_matches = get_num_matches(cigar)
+					num_matches_next = get_num_matches(cigar_next)
+					#has_sufficient_support = False
+					if num_matches >= 30 and num_matches_next >= 30:
+						#has_sufficent_support = True
+						if pos <= pnext:
+							start = pos
+							stop_inner = pos + ref_len(cigar) - 1
+							start_inner = pnext
+							cigar_ref_len = ref_len(cigar_next)
+							stop = pnext + cigar_ref_len - 1
+							left_overhang = get_flank_lengths(cigar, "left")
+							right_overhang = get_flank_lengths(cigar_next, "right")
+						else:
+							start = pnext
+							stop_inner = pnext + ref_len(cigar_next) - 1
+							start_inner = pos
+							cigar_ref_len = ref_len(cigar)
+							stop = pos + cigar_ref_len - 1
+							left_overhang = get_flank_lengths(cigar_next, "left")
+							right_overhang = get_flank_lengths(cigar, "right")
+						spanned_junctions = []
+						total_spanned_intron_length = 0
+						long_junctions = transcript_to_longjunctions[transcript]
+						is_true_positive = False
+						#if readname == "K00282:232:HN2CLBBXX:6:1212:25784:42267":
+						#	print("c")
+						overlapping_spanned_junctions = set()
+						for junction in junctions:
+							junction = int(junction)
+							#if there is an paired alignment that spans junction_overhang base pairs on both sides of junction
+							if start + junction_overhang - 1 <= junction <= stop - junction_overhang:
+								#if either of the two individual reads overlaps the junction (do I need to check whether there are too many insertions? maybe not with short reads)
+								if (start + junction_overhang - 1 <= junction <= stop_inner - junction_overhang) or (start_inner + junction_overhang - 1 <= junction <= stop - junction_overhang):
+									overlapping_spanned_junctions.add(junction)
+								spanned_junctions.append(junction)
+								if str(junction) in long_junctions:
+									is_true_positive = True
+								spanned_intron_length = transcript_junction_to_intron_length[(transcript, junction)]
+								total_spanned_intron_length += spanned_intron_length
+								#output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{junction}\t{readname}\n")
+								#is_supporting_alignment = True
+						expected_genome_tlen = tlen + left_overhang + total_spanned_intron_length + right_overhang
+						if is_true_positive:
+							output_truepositives_file.write(f"{geneid}\t{transcript}\t{tlen}\t{expected_genome_tlen}\t{left_overhang}\t{total_spanned_intron_length}\t{right_overhang}\t{line}")
+						#if readname == "K00282:232:HN2CLBBXX:6:1125:30837:12234":
+						#if readname == "K00282:232:HN2CLBBXX:6:1102:18609:37361":
+						#if readname == "K00282:232:HN2CLBBXX:6:1105:11129:8084":
+						#if readname == "K00282:232:HN2CLBBXX:6:2123:28148:13763":
+						#	print(f"tlen is {tlen}")
+						#	print(f"left overhang is {left_overhang}")
+						#	print(f"total spanned intron length is {total_spanned_intron_length}")
+						#	print(f"right overhang is {right_overhang}")
+						#	print(f"expected genome tlen is {expected_genome_tlen}")
+						#if there was a spanned junction, and the transcript tlen is closer to insert size than expected genome tlen
+						#if total_spanned_intron_length > 0 and abs(tlen - insert_size) < abs(expected_genome_tlen - insert_size):
+						#if there was a spanned junction
+						if spanned_junctions:
+							is_supporting_alignment = True
+							#if this is the first read in the pair
+							if asbin(flag)[-7] == '1':
+								for spanned_junction in spanned_junctions:
+									if spanned_junction in overlapping_spanned_junctions:
+										output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{spanned_junction}\t{readname}\toverlapping\t{expected_genome_tlen}\n")
+									else:
+										output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{spanned_junction}\t{readname}\tnon-overlapping\t{expected_genome_tlen}\n")
 				else:
 					cigar_ref_len = ref_len(cigar)
 					for junction in junctions:
@@ -252,11 +294,13 @@ with open(sys.argv[7], "w") as output_spanningalignments_file, open(sys.argv[8],
 							#if this alignment does not have an intron
 							#aka, if the cigar has at most insertions_threshold insertions
 							if is_intronless(region_cigar, insertions_threshold):
-								output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{junction}\t{readname}\n")
+								output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{junction}\t{readname}\toverlapping\t.\n")
 								is_supporting_alignment = True
 				if is_supporting_alignment:
 					output_spanningalignments_file.write(line)
 			#also need to parse alternate hits
+			#if readname == "K00282:232:HN2CLBBXX:6:2209:17320:18388":
+			#	print("hi")
 			#if this is a supplementary alignment
 			if asbin(flag)[-12] == '1':
 				#go to next read
@@ -325,10 +369,15 @@ with open(sys.argv[7], "w") as output_spanningalignments_file, open(sys.argv[8],
 					#if readname == "K00282:232:HN2CLBBXX:6:1212:25784:42267":
 					#	print("j")
 					assert transcript == transcript2, line+line2
+					num_matches = get_num_matches(cigar)
+					num_matches_next = get_num_matches(cigar_next)
 					#strip off the plus or minus, convert to int
 					pos = int(pos[1:])
 					pnext = int(pnext[1:])
-					if transcript in transcript_to_junctions:
+					is_overlapping_read = False
+					if transcript in transcript_to_overlappingreads and readname in transcript_to_overlappingreads[transcript]:
+						is_overlapping_read = True
+					if not is_overlapping_read and transcript in transcript_to_junctions and num_matches >= 30 and num_matches_next >= 30 and not transcript in crappy_transcripts:
 						#if readname == "K00282:232:HN2CLBBXX:6:1212:25784:42267":
 						#	print("k")
 						junctions = transcript_to_junctions[transcript]
@@ -336,34 +385,45 @@ with open(sys.argv[7], "w") as output_spanningalignments_file, open(sys.argv[8],
 						is_supporting_alignment = False #moved this up before for loop
 						if pos <= pnext:
 							start = pos
+							stop_inner = pos + ref_len(cigar) - 1
+							start_inner = pnext
 							cigar_ref_len = ref_len(cigar_next)
 							stop = pnext + cigar_ref_len - 1
 							left_overhang = get_flank_lengths(cigar, "left")
 							right_overhang = get_flank_lengths(cigar_next, "right")
 						else:
 							start = pnext
+							stop_inner = pnext + ref_len(cigar_next) - 1
+							start_inner = pos
 							cigar_ref_len = ref_len(cigar)
 							stop = pos + cigar_ref_len - 1
 							left_overhang = get_flank_lengths(cigar_next, "left")
 							right_overhang = get_flank_lengths(cigar, "right")
 						tlen = stop - start + 1
+						if tlen < 215 or tlen > 500:
+							continue
 						spanned_junctions = []
 						total_spanned_intron_length = 0
 						long_junctions = transcript_to_longjunctions[transcript]
 						is_true_positive = False
+						overlapping_spanned_junctions = set()
 						for junction in junctions:
 							#if readname == "K00282:232:HN2CLBBXX:6:1212:25784:42267":
 							#	print("l")
 							junction = int(junction)
 							#if there is an alignment that spans 10bp on either side of junction
 							if start + junction_overhang - 1 <= junction <= stop - junction_overhang:
+								#if either of the two individual reads overlaps the junction (do I need to check whether there are too many insertions? maybe not with short reads)
+								if (start + junction_overhang - 1 <= junction <= stop_inner - junction_overhang) or (start_inner + junction_overhang - 1 <= junction <= stop - junction_overhang):
+									overlapping_spanned_junctions.add(junction)
 								spanned_junctions.append(junction)
 								if str(junction) in long_junctions:
 									is_true_positive = True
 								spanned_intron_length = transcript_junction_to_intron_length[(transcript, junction)]
 								total_spanned_intron_length += spanned_intron_length
 						expected_genome_tlen = tlen + left_overhang + total_spanned_intron_length + right_overhang
-						if readname == "K00282:232:HN2CLBBXX:6:2115:22739:30591":
+						#if readname == "K00282:232:HN2CLBBXX:6:2115:22739:30591":
+						if readname == "K00282:232:HN2CLBBXX:6:2209:17320:18388":
 							print(f"transcript is {transcript}")
 							print(f"tlen is {tlen}")
 							print(f"left overhang is {left_overhang}")
@@ -377,7 +437,10 @@ with open(sys.argv[7], "w") as output_spanningalignments_file, open(sys.argv[8],
 						if spanned_junctions:
 							is_supporting_alignment = True
 							for spanned_junction in spanned_junctions:
-								output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{spanned_junction}\t{readname}\n") #I didn't double this
+								if spanned_junction in overlapping_spanned_junctions:
+									output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{spanned_junction}\t{readname}\toverlapping\t{expected_genome_tlen}\n") #I didn't double this
+								else:
+									output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{spanned_junction}\t{readname}\tnon-overlapping\t{expected_genome_tlen}\n")
 						if is_supporting_alignment:
 							output_spanningalignments_file.write(f"{readname}\t0\t{transcript2}\t{pnext}\t255\t{cigar_next}\t=\t{pos}\t0\t*\t*\n")
 							output_spanningalignments_file.write(f"{readname}\t0\t{transcript}\t{pos}\t255\t{cigar}\t=\t{pnext}\t0\t*\t*\n")

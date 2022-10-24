@@ -1,9 +1,16 @@
+#Please update this directory to the scripts directory where RetroDetector is installed
+scripts_directory:
+
+#Please update the filenames of the genome fasta file,
+#the genome gtf file, and the transcriptome file
 ref:
   "ncbi_dmel":
     genomic_fna: Downloads/ncbi_dmel.genomic.fna.gz
     genomic_gtf: Downloads/ncbi_dmel.genomic.gtf.gz
     rna_from_genomic: Downloads/ncbi_dmel.rna_from_genomic.fna.gz
 
+#Please update the filenames of any sequencing data you have.
+#Feel free to add as many samples as you want to analyze.
 fastqs:
   "ISO1":
     short_paired_end:
@@ -13,12 +20,40 @@ fastqs:
     pacbio_hifi:
       1: Downloads/SRR10238607.fastq.gz
 
-scripts_directory:
+#Advanced parameters
 
-#A supporting alignment must extend at least junction_overhang base pairs on both sides of an exon-exon junction
+#A supporting overlapping alignment must extend at least junction_overhang base pairs on both sides of an exon-exon junction
 junction_overhang: 10
 
-#A supporting alignment must have no more than insertions_threshold insertions (in the region comprised of the junction_overhang base pairs on either side of an exon-exon junction)
-insertions_threshold: 10 
+#A supporting overlapping alignment must have no more than insertions_threshold insertions (in the region comprised of the junction_overhang base pairs on either side of an exon-exon junction)
+insertions_threshold: 10
 
-read_threshold: 3
+#Each read of the pair in a supporting short-read spanning alignment must include short_read_spanning_alignment_minimum_matching_bp matches in its cigar string 
+#For example, by default, each read of the pair must have at least 30 bases marked as matches in its cigar string
+short_read_spanning_alignment_minimum_matching_bp: 30
+
+#For a supporting short-read spanning alignment, we require the transcriptomic insertion size to be between 
+#short_read_spanning_alignment_minimum_transcriptomic_insertion_size and short_read_spanning_alignment_maximum_transcriptomic_insertion_size
+short_read_spanning_alignment_minimum_transcriptomic_insertion_size: 215
+short_read_spanning_alignment_maximum_transcriptomic_insertion_size: 485
+
+#For a given paired short-read alignment to the transcriptome, we define the expected genomic insertion size as follows:
+#We take the insertion size of the transcript alignment and then add the lengths of any spanned introns.
+#For example, if the leftmost transcript coordinate of the left read is 101
+#and the rightmost transcript coordinate of the right read is 500
+#then the insertion size of the transcript alignment is 400
+#If there is an exon-exon junction at coordinate 200 that corresponds to an intron of length 25
+#and there is an exon-exon junction at coordinate 300 that corresponds to an intron of length 50
+#then the corresponding expected genomic insertion size would be 400 + 25 + 50 = 475.
+#In order to consider a supporting short-read spanning alignment as "strong" support,
+#we require that the expected genomic insertion size is at least short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold
+short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold: 500
+
+#For both short and long reads, we require at least junction_total_read_support_threshold supporting reads/read pairs
+#before we say that there is sufficient evidence that a particular exon-exon junction is part of a retrogene
+junction_total_read_support_threshold: 3
+
+#For short reads, we additionally require junction_strong_short_read_support_threshold "strong" supporting reads/read pairs
+#Strong short-read support includes an overlapping alignment (that meets overlapping requirements above), 
+#or a spanning alignment with an expected genomic insertion size of at least short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold
+junction_strong_short_read_support_threshold: 1

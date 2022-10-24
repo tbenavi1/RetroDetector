@@ -159,6 +159,7 @@ def is_intronless(cigar, allowed_insertions):
 def process_overlapping_alignment(readname, transcript, pos, cigar, junction):
 	junction_is_supported = False
 	geneid = transcript_to_geneid[transcript]
+	assert pos <= junction - junction_overhang + 1, f"{readname}, {transcript}"
 	region_cigar = subset_cigar_string(cigar, pos, junction - junction_overhang + 1, junction + junction_overhang)
 	#if this alignment does not have an intron
 	#aka, if the cigar has at most insertions_threshold insertions
@@ -167,7 +168,7 @@ def process_overlapping_alignment(readname, transcript, pos, cigar, junction):
 		output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{junction}\t{readname}\toverlapping\t.\n")
 	return junction_is_supported
 
-def process_spanning_alignment(readname, transcript, tlen, left_overhang, right_overhang, spanned_overlapped_junctions, spanned_nonoverlapped_junctions)
+def process_spanning_alignment(readname, transcript, tlen, left_overhang, right_overhang, spanned_overlapped_junctions, spanned_nonoverlapped_junctions):
 	geneid = transcript_to_geneid[transcript]
 	total_spanned_intron_length = 0
 	for junction in spanned_overlapped_junctions:
@@ -178,7 +179,7 @@ def process_spanning_alignment(readname, transcript, tlen, left_overhang, right_
 		total_spanned_intron_length += spanned_intron_length
 	expected_genome_tlen = tlen + left_overhang + total_spanned_intron_length + right_overhang
 	for junction in spanned_nonoverlapped_junctions:
-		output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{junction}\t{readname}\t{non-overlapping}\t{expected_genome_tlen}\n")
+		output_spannedjunctions_file.write(f"{geneid}\t{transcript}\t{junction}\t{readname}\tnon-overlapping\t{expected_genome_tlen}\n")
 	return
 
 processed_paired_alignment_reads = set()
@@ -195,18 +196,18 @@ def process_paired_alignment(readname, flag, transcript, pos, cigar, pnext, tlen
 	else:
 		if pos <= pnext:
 			start = pos
-			stop_inner = pos + ref_len(cigar) - 1
 			start_inner = pnext
-			stop = pnext + ref_len(cigar_next) - 1
-			left_overhang = get_flank_lengths(cigar, "left")
-			right_overhang = get_flank_lengths(cigar_next, "right")
+			left_cigar = cigar
+			right_cigar = cigar_next
 		else:
 			start = pnext
-			stop_inner = pnext + ref_len(cigar_next) - 1
 			start_inner = pos
-			stop = pos + ref_len(cigar) - 1
-			left_overhang = get_flank_lengths(cigar_next, "left")
-			right_overhang = get_flank_lengths(cigar, "right")
+			left_cigar = cigar_next
+			right_cigar = cigar
+		stop_inner = start + ref_len(left_cigar) - 1
+		stop = start_inner + ref_len(right_cigar) - 1
+		left_overhang = get_flank_lengths(left_cigar, "left")
+		right_overhang = get_flank_lengths(right_cigar, "right")
 		junctions = transcript_to_junctions[transcript]
 		is_supporting_alignment = False
 		spanned_overlapped_junctions = []
@@ -215,11 +216,11 @@ def process_paired_alignment(readname, flag, transcript, pos, cigar, pnext, tlen
 			junction_is_supported = False
 			#if left read overlaps junction
 			if start + junction_overhang - 1 <= junction <= stop_inner - junction_overhang:
-				junction_is_supported = process_overlapping_alignment(readname, transcript, pos, cigar, junction)
+				junction_is_supported = process_overlapping_alignment(readname, transcript, start, left_cigar, junction)
 				spanned_overlapped_junctions.append(junction)
 			#else if right read overlaps junction
 			elif start_inner + junction_overhang - 1 <= junction <= stop - junction_overhang:
-				junction_is_supported = process_overlapping_alignment(readname, transcript, pos, cigar, junction)
+				junction_is_supported = process_overlapping_alignment(readname, transcript, start_inner, right_cigar, junction)
 				spanned_overlapped_junctions.append(junction)
 			#else if paired alignment spans junction
 			elif start + junction_overhang - 1 <= junction <= stop - junction_overhang:
@@ -254,7 +255,7 @@ def process_unpaired_alignment(readname, flag, transcript, pos, cigar, pnext, tl
 
 def process_alignment(readname, flag, transcript, pos, cigar, pnext, tlen, cigar_next, line):
 	reads_mapped_to_parent_gene = transcript_to_reads_mapped_to_parent_gene[transcript]
-	if readname in reads_mapped_to_parent_gene
+	if readname in reads_mapped_to_parent_gene:
 		read_is_mapped_to_parent_gene = True
 	else:
 		read_is_mapped_to_parent_gene = False
@@ -264,11 +265,11 @@ def process_alignment(readname, flag, transcript, pos, cigar, pnext, tlen, cigar
 		transcript_has_exon_exon_junctions = False
 	#if this alignment could potentially be evidence of a retrogene
 	if not read_is_mapped_to_parent_gene and transcript_has_exon_exon_junctions:
-    #if alignment has expected tlen
-    if short_read_spanning_alignment_minimum_transcriptomic_insertion_size <= abs(tlen) <= short_read_spanning_alignment_maximum_transcriptomic_insertion_size:
-      alignment_has_expected_tlen = True
-    else:
-      alignment_has_expected_tlen = False
+		#if alignment has expected tlen
+		if short_read_spanning_alignment_minimum_transcriptomic_insertion_size <= abs(tlen) <= short_read_spanning_alignment_maximum_transcriptomic_insertion_size:
+			alignment_has_expected_tlen = True
+		else:
+			alignment_has_expected_tlen = False
 		#if alignment is a proper pair
 		if asbin(flag)[-2] == '1':
 			alignment_is_proper_pair = True
@@ -307,6 +308,7 @@ def get_alternate_alignments(line):
 	flag = int(flag)
 	#if the mate is unmapped
 	if asbin(flag)[-4] == "1":
+		alternate_hits = []
 		optional_fields = line.strip().split()[11:]
 		for optional_field in optional_fields:
 			if optional_field.startswith("XA:Z:"):
@@ -317,7 +319,7 @@ def get_alternate_alignments(line):
 		for alternate_hit in alternate_hits:
 			transcript = alternate_hit.split(",")[0]
 			alternate_transcripts.add(transcript)
-			transcript_to_alternate_hits.append(alternate_hit)
+			transcript_to_alternate_hits[transcript].append(alternate_hit)
 		for transcript in alternate_transcripts:
 			alternate_hits = transcript_to_alternate_hits[transcript]
 			if len(alternate_hits) == 1:
@@ -345,6 +347,8 @@ def get_alternate_alignments(line):
 	else:
 		line2 = line
 		line = read_to_alignment[readname]
+		alternate_hits = []
+		alternate_hits2 = []
 		optional_fields = line.strip().split()[11:]
 		optional_fields2 = line2.strip().split()[11:]
 		for optional_field in optional_fields:
@@ -384,31 +388,51 @@ def get_alternate_alignments(line):
 				alternate_hit = alternate_hits[0]
 				alternate_hit2 = alternate_hits2[0]
 				pos, cigar = alternate_hit.split(",")[1:3]
-				pnext, cigar_next = alternate_hit2.split(",")[1:3]
+				second_pos, second_cigar = alternate_hit2.split(",")[1:3]
 				first_strand = pos[0]
-				second_strand = pnext[0]
-				assert first_strand != second_strand, line+line2
-				if first_strand == "+":
-					#set first flag to "read paired", "read mapped in proper pair", "mate reverse strand", "first in pair"
-					first_flag = 99
-					#set second flag to "read paired", "read mapped in proper pair", "read reverse strand", "second in pair"
-					second_flag = 147
-				else:
-					#set first flag to "read paired", "read mapped in proper pair", "read reverse strand", "first in pair"
-					first_flag = 83
-					#set second flag to "read paired", "read mapped in proper pair", "mate reverse strand", "second in pair"
-					second_flag = 163
+				second_strand = second_pos[0]
 				#strip off the plus or minus, convert to int
 				pos = int(pos[1:])
-				pnext = int(pnext[1:])
-				first_tlen = calculate_tlen(pos, cigar, pnext, cigar_next)
-				second_tlen = -first_tlen
-				first_alternate_line = f"{alternate_readname}\t{first_flag}\t{transcript}\t{pos}\t255\t{cigar}\t=\t{pnext}\t{first_tlen}\t*\t*\n"
-				second_alternate_line = f"{alternate_readname}\t{second_flag}\t{transcript}\t{pnext}\t255\t{cigar_next}\t=\t{pos}\t{second_tlen}\t*\t*\n"
-				alternate_alignment = (alternate_readname, first_flag, transcript, pos, cigar, pnext, first_tlen, cigar_next, first_alternate_line)
-				alternate_alignments.append(alternate_alignment)
-				alternate_alignment = (alternate_readname, second_flag, transcript, pnext, cigar_next, pos, second_tlen, cigar, second_alternate_line)
-				alternate_alignments.append(alternate_alignment)
+				second_pos = int(second_pos[1:])
+				#if these map to different strands, so still possible a pair
+				if first_strand != second_strand:
+					if first_strand == "+":
+						#set first flag to "read paired", "read mapped in proper pair", "mate reverse strand", "first in pair"
+						first_flag = 99
+						#set second flag to "read paired", "read mapped in proper pair", "read reverse strand", "second in pair"
+						second_flag = 147
+					else:
+						#set first flag to "read paired", "read mapped in proper pair", "read reverse strand", "first in pair"
+						first_flag = 83
+						#set second flag to "read paired", "read mapped in proper pair", "mate reverse strand", "second in pair"
+						second_flag = 163
+					first_tlen = calculate_tlen(pos, cigar, second_pos, second_cigar)
+					second_tlen = -first_tlen
+					first_alternate_line = f"{alternate_readname}\t{first_flag}\t{transcript}\t{pos}\t255\t{cigar}\t=\t{second_pos}\t{first_tlen}\t*\t*\n"
+					second_alternate_line = f"{alternate_readname}\t{second_flag}\t{transcript}\t{second_pos}\t255\t{second_cigar}\t=\t{pos}\t{second_tlen}\t*\t*\n"
+					alternate_alignment = (alternate_readname, first_flag, transcript, pos, cigar, second_pos, first_tlen, second_cigar, first_alternate_line)
+					alternate_alignments.append(alternate_alignment)
+					alternate_alignment = (alternate_readname, second_flag, transcript, second_pos, second_cigar, pos, second_tlen, cigar, second_alternate_line)
+					alternate_alignments.append(alternate_alignment)
+				#else these are not possibly a pair
+				else:
+					if first_strand == "+":
+						first_flag = 0
+					else:
+						first_flag = 16
+					if second_strand == "+":
+						second_flag = 0
+					else:
+						second_flag = 16
+					pnext = 0
+					tlen = 0
+					cigar_next = "*"
+					first_alternate_line = f"{alternate_readname}\t{first_flag}\t{transcript}\t{pos}\t255\t{cigar}\t*\t{pnext}\t{tlen}\t*\t*\n"
+					second_alternate_line = f"{alternate_readname}\t{second_flag}\t{transcript}\t{second_pos}\t255\t{second_cigar}\t*\t{pnext}\t{tlen}\t*\t*\n"
+					alternate_alignment = (alternate_readname, first_flag, transcript, pos, cigar, pnext, tlen, cigar_next, first_alternate_line)
+					alternate_alignments.append(alternate_alignment)
+					alternate_alignment = (alternate_readname, second_flag, transcript, second_pos, second_cigar, pnext, tlen, cigar_next, second_alternate_line)
+					alternate_alignments.append(alternate_alignment)
 			#else if only the first is singly mapped to this transcript
 			elif first_is_singly_mapped and not second_is_singly_mapped:
 				alternate_hit = alternate_hits[0]

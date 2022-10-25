@@ -42,8 +42,11 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation and Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">RetroDetector Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example Dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Advanced Parameters</a></li>
 </ul>
 
         </div>
@@ -74,10 +77,14 @@
 <h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this heading"></a></h1>
 <p>The first step is to install RetroDetector and to ensure that you have all the necessary dependencies. Please see the <a class="reference internal" href="installation.html"><span class="doc">Installation and Dependencies</span></a> section for further information.</p>
 <p>RetroDetector is built on the <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> workflow management system. The benefit of this is that Snakemake keeps track of all the steps in the pipeline and automatically takes care of resource management.</p>
-<p>Any time you want to run RetroDetector to analyze the data for a new project, all you have to do is set up a new working directory and a new configuration file with the locations of all the data files.</p>
+<p>Any time you want to run RetroDetector to analyze the data for a new project, all you have to do is set up a new working directory, make a new configuration file with the locations of all the data files, and copy the Snakefile which has all the pipeline instructions.</p>
 <p>So, make a working directory and change into that directory. For the rest of these instructions, please make sure you are in your working directory.</p>
 <p>Now you can set up the configuration file according to your reference and sequencing files. Please see the <a class="reference internal" href="config.html"><span class="doc">Configuration</span></a> section for further information.</p>
-<p>Once you have set up the configuration file, you can finally run the RetroDetector pipeline. First, activate the snakemake environment and perform a dry run:</p>
+<p>Once you have set up the configuration file, you need to copy the Snakefile from your RetroDetector installation to your working directory. For example, if RetroDetector is installed at /user/software/RetroDetector you would run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cp /user/software/RetroDetector/Snakefile .</span>
+</pre></div>
+</div>
+<p>Now you can finally run the RetroDetector pipeline. First, activate the snakemake environment and perform a dry run:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">conda activate snakemake</span>
 <span class="go">snakemake -np</span>
 </pre></div>
@@ -90,8 +97,8 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">snakemake --cores 32</span>
 </pre></div>
 </div>
-<p>RetroDetector will then map the sequencing reads to the transcriptome and genome and then identify any retrogenes. For more information about the pipeline, please see the <a class="reference internal" href="pipeline.html"><span class="doc">&lt;no title&gt;</span></a> section. For more information about the final results produced by RetroDetector, please see the <a class="reference internal" href="results.html"><span class="doc">&lt;no title&gt;</span></a> section.</p>
-<p>If you want to see how to run RetroDetector on an example dataset, please see the <a class="reference internal" href="example.html"><span class="doc">Example Dataset</span></a> section. For FAQs, please see the <a class="reference internal" href="faqs.html"><span class="doc">FAQs</span></a> section. For advanced users, if you want information about adjusting advanced parameters in the pipeline, please see the <a class="reference internal" href="parameters.html"><span class="doc">&lt;no title&gt;</span></a> section.</p>
+<p>RetroDetector will then map the sequencing reads to the transcriptome and genome and then identify any retrogenes. For more information about the pipeline, please see the <a class="reference internal" href="pipeline.html"><span class="doc">RetroDetector Pipeline</span></a> section. For more information about the final results produced by RetroDetector, please see the <a class="reference internal" href="results.html"><span class="doc">Results</span></a> section.</p>
+<p>If you want to see how to run RetroDetector on an example dataset, please see the <a class="reference internal" href="example.html"><span class="doc">Example Dataset</span></a> section. For FAQs, please see the <a class="reference internal" href="faqs.html"><span class="doc">FAQs</span></a> section. For advanced users, if you want information about adjusting advanced parameters in the pipeline, please see the <a class="reference internal" href="parameters.html"><span class="doc">Advanced Parameters</span></a> section.</p>
 <p>If you encounter any issues while running RetroDetector, please submit a GitHub issue <a class="reference external" href="https://github.com/tbenavi1/RetroDetector/issues">here</a>.</p>
 </section>
 

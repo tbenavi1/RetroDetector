@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FAQs" href="faqs.html" />
-    <link rel="prev" title="Configuration" href="config.html" /> 
+    <link rel="prev" title="Results" href="results.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,11 +42,14 @@
 <li class="toctree-l1"><a class="reference internal" href="start.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation and Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">RetroDetector Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Results</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Example Dataset</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#drosophila-melanogaster">Drosophila melanogaster</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Advanced Parameters</a></li>
 </ul>
 
         </div>
@@ -94,15 +97,15 @@
 <span class="go">gzip Downloads/SRR10728584_2.fastq</span>
 </pre></div>
 </div>
-<p>The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. If RetroDetector was installed at /user/software/RetroDetector, you would copy config.yaml to your working directory with the following command:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cp /users/software/RetroDetector/example/config.yaml .</span>
+<p>The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. If RetroDetector is installed at /user/software/RetroDetector, you would copy config.yaml to your working directory with the following command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cp /user/software/RetroDetector/example/config.yaml .</span>
 </pre></div>
 </div>
-<p>Now, you need edit config.yaml to add the scripts directory location from your RetroDetector installation. For example, if RetroDetector was installed at /user/software/RetroDetector, you would edit the scripts directory line of config.yaml as follows:</p>
+<p>Now, you need to edit config.yaml to add the scripts directory location from your RetroDetector installation. For example, if RetroDetector is installed at /user/software/RetroDetector, you would edit the scripts directory line of config.yaml as follows:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">scripts_directory: /user/software/RetroDetector/scripts</span>
 </pre></div>
 </div>
-<p>Next, copy Snakefile from your RetroDetector installation to your working directory. For example, if RetroDetector was installed at /user/software/RetroDetector and you are in your working directory, you would run:</p>
+<p>Next, copy Snakefile from your RetroDetector installation to your working directory. For example, if RetroDetector is installed at /user/software/RetroDetector and you are in your working directory, you would run:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cp /user/software/RetroDetector/Snakefile .</span>
 </pre></div>
 </div>
@@ -137,7 +140,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="config.html" class="btn btn-neutral float-left" title="Configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="results.html" class="btn btn-neutral float-left" title="Results" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="faqs.html" class="btn btn-neutral float-right" title="FAQs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

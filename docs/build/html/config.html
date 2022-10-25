@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="pipeline.html" />
+    <link rel="next" title="RetroDetector Pipeline" href="pipeline.html" />
     <link rel="prev" title="Installation and Dependencies" href="installation.html" /> 
 </head>
 
@@ -42,8 +42,11 @@
 <li class="toctree-l1"><a class="reference internal" href="start.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation and Dependencies</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">RetroDetector Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example Dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Advanced Parameters</a></li>
 </ul>
 
         </div>
@@ -73,10 +76,41 @@
   <section id="configuration">
 <h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading"></a></h1>
 <p>Whenever you want to run RetroDetector to analyze the data for a new project, you need to set up a configuration file to tell RetroDetector where to find the reference genome, reference transcriptome, and whole genome sequencing files.</p>
-<p>Make sure you are in your working directory and then copy the example config.yaml file from the RetroDetector installation location to your current directory.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cp /users/software/RetroDetector/example/config.yaml .</span>
+<p>Make sure you are in the working directory for your project and then copy the example config.yaml file from the RetroDetector installation location to your current directory. For example, if RetroDetector is installed at /user/software/RetroDetector, you would run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cp /user/software/RetroDetector/example/config.yaml .</span>
 </pre></div>
 </div>
+<p>The first several lines of the example config.yaml file look like this:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span>Please update this directory to the scripts directory where RetroDetector is installed
+<span class="go">scripts_directory:</span>
+
+<span class="gp">#</span>Please update the filenames of the genome fasta file,
+<span class="gp">#</span>the genome gtf file, and the transcriptome file
+<span class="go">ref:</span>
+<span class="go">  &quot;ncbi_dmel&quot;:</span>
+<span class="go">    genomic_fna: Downloads/ncbi_dmel.genomic.fna.gz</span>
+<span class="go">    genomic_gtf: Downloads/ncbi_dmel.genomic.gtf.gz</span>
+<span class="go">    rna_from_genomic: Downloads/ncbi_dmel.rna_from_genomic.fna.gz</span>
+
+<span class="gp">#</span>Please update the filenames of any sequencing data you have.
+<span class="gp">#</span>Feel free to add as many samples as you want to analyze.
+<span class="go">fastqs:</span>
+<span class="go">  &quot;ISO1&quot;:</span>
+<span class="go">    short_paired_end:</span>
+<span class="go">      1:</span>
+<span class="go">        1: Downloads/SRR10728584_1.fastq.gz</span>
+<span class="go">        2: Downloads/SRR10728584_2.fastq.gz</span>
+<span class="go">    pacbio_hifi:</span>
+<span class="go">      1: Downloads/SRR10238607.fastq.gz</span>
+</pre></div>
+</div>
+<p>The first step is to edit config.yaml to add the scripts directory location for your RetroDetector installation. For example, if RetroDetector is installed at /user/software/RetroDetector, you would edit the scripts directory line of config.yaml as follows:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">scripts_directory: /user/software/RetroDetector/scripts</span>
+</pre></div>
+</div>
+<p>The next step is to edit the “ref” section of config.yaml with the locations for the gzipped reference genome, the gzipped reference gtf file, and the gzipped reference transcriptome. You can also rename the reference. If you change the reference name in the future because there are updated reference files or if you add a reference because you want to analyze your data against a closely related species, RetroDetector will automatically rerun the pipeline once the config file is updated.</p>
+<p>Finally, edit the “fastqs” section of config.yaml with any samples you have and their corresponding sequencing data. Each sample may have “short_paired_end”, “pacbio_hifi”, “pacbio_clr”, or “ont” sections for Illumina paired-end, PacBio HiFi, PacBio CLR, and Oxford Nanopore sequencing data respectively. For each sequencing technology, you may include as many files as you have by numbering them as above with 1, 2, etc. You may also include as many samples as you have.</p>
+<p>To continue with setting up RetroDetector for your project, return to <a class="reference internal" href="start.html"><span class="doc">Quick Start</span></a>.</p>
 </section>
 
 
@@ -84,7 +118,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="installation.html" class="btn btn-neutral float-left" title="Installation and Dependencies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pipeline.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pipeline.html" class="btn btn-neutral float-right" title="RetroDetector Pipeline" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

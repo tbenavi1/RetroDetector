@@ -25,19 +25,19 @@ The next step is to download and gzip the sequencing data. Make sure you have `s
    gzip Downloads/SRR10728584_1.fastq
    gzip Downloads/SRR10728584_2.fastq
  
-The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. If RetroDetector was installed at /user/software/RetroDetector, you would copy config.yaml to your working directory with the following command:
+The next step is to set up the configuration file config.yaml which tells RetroDetector where to find the necessary input files. If RetroDetector is installed at /user/software/RetroDetector, you would copy config.yaml to your working directory with the following command:
 
 .. code-block:: console
 
-   cp /users/software/RetroDetector/example/config.yaml .
+   cp /user/software/RetroDetector/example/config.yaml .
 
-Now, you need edit config.yaml to add the scripts directory location from your RetroDetector installation. For example, if RetroDetector was installed at /user/software/RetroDetector, you would edit the scripts directory line of config.yaml as follows:
+Now, you need to edit config.yaml to add the scripts directory location from your RetroDetector installation. For example, if RetroDetector is installed at /user/software/RetroDetector, you would edit the scripts directory line of config.yaml as follows:
 
 .. code-block:: console
 
    scripts_directory: /user/software/RetroDetector/scripts
 
-Next, copy Snakefile from your RetroDetector installation to your working directory. For example, if RetroDetector was installed at /user/software/RetroDetector and you are in your working directory, you would run:
+Next, copy Snakefile from your RetroDetector installation to your working directory. For example, if RetroDetector is installed at /user/software/RetroDetector and you are in your working directory, you would run:
 
 .. code-block:: console
 

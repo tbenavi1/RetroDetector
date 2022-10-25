@@ -5,13 +5,20 @@ The first step is to install RetroDetector and to ensure that you have all the n
 
 RetroDetector is built on the `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_ workflow management system. The benefit of this is that Snakemake keeps track of all the steps in the pipeline and automatically takes care of resource management.
 
-Any time you want to run RetroDetector to analyze the data for a new project, all you have to do is set up a new working directory and a new configuration file with the locations of all the data files.
+Any time you want to run RetroDetector to analyze the data for a new project, all you have to do is set up a new working directory, make a new configuration file with the locations of all the data files, and copy the Snakefile which has all the pipeline instructions.
 
 So, make a working directory and change into that directory. For the rest of these instructions, please make sure you are in your working directory.
 
 Now you can set up the configuration file according to your reference and sequencing files. Please see the :doc:`config` section for further information.
 
-Once you have set up the configuration file, you can finally run the RetroDetector pipeline. First, activate the snakemake environment and perform a dry run:
+Once you have set up the configuration file, you need to copy the Snakefile from your RetroDetector installation to your working directory. For example, if RetroDetector is installed at /user/software/RetroDetector you would run:
+
+.. code-block:: console
+
+  cp /user/software/RetroDetector/Snakefile .
+
+
+Now you can finally run the RetroDetector pipeline. First, activate the snakemake environment and perform a dry run:
 
 .. code-block:: console
 

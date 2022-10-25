@@ -69,9 +69,7 @@ with open(snakemake.input[1], "r") as input_spannedjunctions_file:
 		if (transcript, junction) in transcript_junction_to_intron:
 			chrom = "_".join(transcript.split("|")[1].split("_")[:2])
 			intron = transcript_junction_to_intron[(transcript, junction)]
-			#readname_to_introns[readname].add(f"{chrom}:{intron}")
 			readname_to_introns[readname].add(intron)
-			#intron_to_transcripts[f"{chrom}:{intron}"].add(transcript)
 			intron_to_transcripts[intron].add(transcript)
 
 def cigar_missing_percent(cigar):

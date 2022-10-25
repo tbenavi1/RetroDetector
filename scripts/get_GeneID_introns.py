@@ -1,14 +1,11 @@
 from collections import defaultdict
 
-#GeneID_of_interest = snakemake.params[0]
-
 transcript_to_indices = defaultdict(set)
 transcript_to_geneid = {}
 with open(snakemake.input[0], "r") as input_coverage_file:
 	for line in input_coverage_file:
 		GeneID, transcript, *junctions = line.strip().split()
 		transcript_to_geneid[transcript] = GeneID
-		#if GeneID == GeneID_of_interest:
 		num_junctions = len(junctions)//2
 		for i in range(num_junctions):
 			junction = int(junctions[2*i])
@@ -22,7 +19,6 @@ with open(snakemake.input[1], "r") as input_introns_file:
 		geneid, transcript, *introns = line.strip().split()
 		if transcript in transcript_to_indices:
 			assert geneid == transcript_to_geneid[transcript]
-			#geneid = transcript_to_geneid[transcript]
 			indices = transcript_to_indices[transcript]
 			for i, junction in indices:
 				intron = introns[i]

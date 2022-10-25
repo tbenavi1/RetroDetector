@@ -50,16 +50,18 @@ rule all:
     #expand("BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam", ref=config["ref"], sample=long_samples)
     #expand("Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.overlapping.genes.tsv", ref=config["ref"], sample=["1300_13"])
     #expand("Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spannedjunctions.tsv", ref=config["ref"], sample=["1300_13"])
-    #expand("Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.numspannedjunctions.tsv", ref=config["ref"], sample=["1300_13"])
+    #expand("Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.numspannedjunctions.tsv", ref=config["ref"], sample=["1300_13"], strongthreshold=config["short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"])
+    #expand("Summary/{ref}/{sample}/{ref}.{sample}.{strongthreshold}.results.txt", ref=config["ref"], sample=["1300_13"], strongthreshold=config["short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"])
     #expand("Junctions/{ref}.synthetic.longreads.fasta", ref=config["ref"])
     #expand("Junctions/{ref}.junctions.unambiguous.long.tsv", ref=config["ref"])
     #expand("Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv", ref=config["ref"], sample=["1300_13"])
+    expand("AS/{ref}/{sample}/{ref}.{sample}.genome.AS", ref=config["ref"], sample=["1300_13"])
     #expand("AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.best.AS.diff", ref=config["ref"], sample=["1300_13"])
     #expand("RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.transcript.fastas.txt", ref=config["ref"], sample=["1300_13"])
     #expand("Analysis/{ref}/{sample}/{ref}.{sample}.introns.missing_percent", ref=config["ref"], sample=["1300_13"])
     #expand("Analysis/{ref}/{sample}/{ref}.{sample}.intronsummary", ref=config["ref"], sample=["1300_13"])
     #expand("SFS/{ref}/summary/long/{ref}.longreads.freqtable.multiplyspanned.tsv", ref=config["ref"])
-    expand("SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.multiplyspanned.tsv", ref=config["ref"])
+    #expand("SFS/{ref}/summary/short_paired_end/{ref}.shortreads.freqtable.multiplyspanned.tsv", ref=config["ref"])
 
 #bgzip reference genome
 
@@ -598,22 +600,22 @@ rule find_short_alignments_overlapping_genes:
 
 rule find_shortreads_alignments:
   input:
-    #junctions="Junctions/{ref}.junctions.unambiguous.short.tsv",
+    bam="BAMS/{ref}/{sample}/transcriptome/short_paired_end/{ref}.{sample}.transcriptome.short.sorted.bam",
     junctions="Junctions/{ref}.junctions.tsv",
-    longjunctions="Junctions/{ref}.longjunctions.tsv",
     intronlengths="Junctions/{ref}.intron_lengths.tsv",
-    overlapping="Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.overlapping.genes.tsv",
-    coverages="test.coverage",
-    bam="BAMS/{ref}/{sample}/transcriptome/short_paired_end/{ref}.{sample}.transcriptome.short.sorted.bam"
+    overlapping="Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.overlapping.genes.tsv"
   output:
     spanningalignments="Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spanningalignments.sam",
     spannedjunctions="Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spannedjunctions.tsv"
   params:
     scripts=get_scripts,
     junction_overhang=config["junction_overhang"],
-    insertions_threshold=config["insertions_threshold"]
+    insertions_threshold=config["insertions_threshold"],
+    short_read_spanning_alignment_minimum_matching_bp=config["short_read_spanning_alignment_minimum_matching_bp"],
+    short_read_spanning_alignment_minimum_transcriptomic_insertion_size=config["short_read_spanning_alignment_minimum_transcriptomic_insertion_size"],
+    short_read_spanning_alignment_maximum_transcriptomic_insertion_size=config["short_read_spanning_alignment_maximum_transcriptomic_insertion_size"]
   shell:
-    "samtools view -h {input.bam} | python {params.scripts}/find_shortreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {input.junctions} {input.longjunctions} {input.intronlengths} {input.overlapping} {input.coverages} {output.spanningalignments} {output.spannedjunctions}"
+    "samtools view -h {input.bam} | python {params.scripts}/find_shortreads_intronless_junction_spanning_alignments.py {params.junction_overhang} {params.insertions_threshold} {params.short_read_spanning_alignment_minimum_matching_bp} {params.short_read_spanning_alignment_minimum_transcriptomic_insertion_size} {params.short_read_spanning_alignment_maximum_transcriptomic_insertion_size} {input.junctions} {input.intronlengths} {input.overlapping} {output.spanningalignments} {output.spannedjunctions}"
 
 rule find_longreads_alignments:
   input:
@@ -638,12 +640,29 @@ rule summarize_alignments_short:
     "Junctions/{ref}.junctions.tsv",
     "Spanned/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.spannedjunctions.tsv"
   output:
-    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.coverage.across.junctions.tsv",
-    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.shortreads.numspannedjunctions.tsv"
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.coverage.across.junctions.tsv",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.numspannedjunctions.tsv",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.no_non_overlapping.coverage.across.junctions.tsv",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.no_non_overlapping.numspannedjunctions.tsv",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.no_alternate.coverage.across.junctions.tsv",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv"
   params:
-    scripts=get_scripts
+    scripts=get_scripts,
   script:
     "{params.scripts}/summarize_spanned_junctions_short.py"
+
+rule paper_results:
+  input:
+    "long_truepositives.txt",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.numspannedjunctions.tsv",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.no_non_overlapping.numspannedjunctions.tsv",
+    "Summary/{ref}/{sample}/short_paired_end/{ref}.{sample}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv"
+  output:
+    "Summary/{ref}/{sample}/{ref}.{sample}.{strongthreshold}.results.txt"
+  params:
+    scripts=get_scripts,
+  script:
+    "{params.scripts}/paper_results.py"
 
 rule summarize_alignments_long:
   input:

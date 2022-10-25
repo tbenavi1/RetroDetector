@@ -1,5 +1,7 @@
 from collections import defaultdict
 
+junction_total_read_support_threshold = snakemake.config["junction_total_read_support_threshold"]
+
 transcript_to_junctions = {}
 transcript_to_geneid = {}
 with open(snakemake.input[0], "r") as input_junctions_file:
@@ -17,8 +19,6 @@ with open(snakemake.input[1], "r") as input_spannedjunctions_file:
 		geneid, transcript, junction, readname = line.strip().split()
 		transcript_junction_to_reads[(transcript, junction)].add(readname)
 
-read_threshold = snakemake.config["read_threshold"]
-
 with open(snakemake.output[0], "w") as output_coverage_file, open(snakemake.output[1], "w") as output_numspanned_file:
 	for transcript in sorted(transcript_to_junctions):
 		geneid = transcript_to_geneid[transcript]
@@ -30,7 +30,7 @@ with open(snakemake.output[0], "w") as output_coverage_file, open(snakemake.outp
 			reads = transcript_junction_to_reads[(transcript, junction)]
 			num_reads = len(reads)
 			output_coverage_line += f"\t{junction}\t{num_reads}"
-			if num_reads >= read_threshold:
+			if num_reads >= junction_total_read_support_threshold:
 				num_junctions_spanned_by_threshold += 1
 		output_coverage_line += "\n"
 		if num_junctions_spanned_by_threshold > 0:

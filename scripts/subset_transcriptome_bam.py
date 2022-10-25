@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-read_threshold = snakemake.config["read_threshold"]
+junction_total_read_support_threshold = snakemake.config["junction_total_read_support_threshold"]
 
 transcript_junction_to_reads = defaultdict(set)
 with open(snakemake.input[0], "r") as input_spannedjunctions_file:
@@ -14,7 +14,7 @@ supported_junctions = []
 for (transcript, junction) in transcript_junction_to_reads:
 	reads = transcript_junction_to_reads[(transcript, junction)]
 	num_reads = len(reads)
-	if num_reads >= read_threshold:
+	if num_reads >= junction_total_read_support_threshold:
 		supporting_reads.update(reads)
 		supported_junctions.append((transcript, junction))
 

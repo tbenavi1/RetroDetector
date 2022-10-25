@@ -87,3 +87,5 @@ Finally, make sure to add the paths to SAMtools and HTSlib to your $PATH environ
 
    export PATH=/user/software/samtools-1.15.1/bin:$PATH
    export PATH=/user/software/htslib-1.15.1/bin:$PATH
+
+To continue with setting up RetroDetector for your project, return to :doc:`start`.

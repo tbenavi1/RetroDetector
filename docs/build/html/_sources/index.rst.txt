@@ -29,5 +29,8 @@ Contents
    start
    installation
    config
+   pipeline
+   results
    example
    faqs
+   parameters

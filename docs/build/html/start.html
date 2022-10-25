@@ -73,14 +73,26 @@
   <section id="quick-start">
 <h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this heading"></a></h1>
 <p>The first step is to install RetroDetector and to ensure that you have all the necessary dependencies. Please see the <a class="reference internal" href="installation.html"><span class="doc">Installation and Dependencies</span></a> section for further information.</p>
-<p>The next step is to make a working directory and to change into that directory. For the rest of these instructions, please make sure you are in your working directory.</p>
-<p>Now you can set up the configuration file according to your reference and sequencing files. Please see the <a class="reference internal" href="config.html"><span class="doc">Configuration</span></a> section for further information. One option is to download the example config.yaml to your working directory from <a class="reference external" href="https://raw.githubusercontent.com/tbenavi1/RetroDetector/main/example/config.yaml">here</a> and make the necessary edits. Alternatively, you can make a new config.yaml in your working directory.</p>
-<p>Then, you should copy the</p>
-<p>Now we can finally run the RetroDetector pipeline. First, activate the snakemake environment and perform a dry run:</p>
+<p>RetroDetector is built on the <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> workflow management system. The benefit of this is that Snakemake keeps track of all the steps in the pipeline and automatically takes care of resource management.</p>
+<p>Any time you want to run RetroDetector to analyze the data for a new project, all you have to do is set up a new working directory and a new configuration file with the locations of all the data files.</p>
+<p>So, make a working directory and change into that directory. For the rest of these instructions, please make sure you are in your working directory.</p>
+<p>Now you can set up the configuration file according to your reference and sequencing files. Please see the <a class="reference internal" href="config.html"><span class="doc">Configuration</span></a> section for further information.</p>
+<p>Once you have set up the configuration file, you can finally run the RetroDetector pipeline. First, activate the snakemake environment and perform a dry run:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">conda activate snakemake</span>
 <span class="go">snakemake -np</span>
 </pre></div>
 </div>
+<p>This should print to the console something like this:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">this is a test</span>
+</pre></div>
+</div>
+<p>If there are no errors, then you can run RetroDetector. To run the pipeline, you have to tell RetroDetector how many cores you would like to use. For example, if you want to use 32 cores you would run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">snakemake --cores 32</span>
+</pre></div>
+</div>
+<p>RetroDetector will then map the sequencing reads to the transcriptome and genome and then identify any retrogenes. For more information about the pipeline, please see the <a class="reference internal" href="pipeline.html"><span class="doc">&lt;no title&gt;</span></a> section. For more information about the final results produced by RetroDetector, please see the <a class="reference internal" href="results.html"><span class="doc">&lt;no title&gt;</span></a> section.</p>
+<p>If you want to see how to run RetroDetector on an example dataset, please see the <a class="reference internal" href="example.html"><span class="doc">Example Dataset</span></a> section. For FAQs, please see the <a class="reference internal" href="faqs.html"><span class="doc">FAQs</span></a> section. For advanced users, if you want information about adjusting advanced parameters in the pipeline, please see the <a class="reference internal" href="parameters.html"><span class="doc">&lt;no title&gt;</span></a> section.</p>
+<p>If you encounter any issues while running RetroDetector, please submit a GitHub issue <a class="reference external" href="https://github.com/tbenavi1/RetroDetector/issues">here</a>.</p>
 </section>
 
 

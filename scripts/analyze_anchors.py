@@ -110,8 +110,6 @@ with open(snakemake.input[0], "r") as input_transcript_sam_file:
 			else:
 				read_reversed = False
 			transcript_start, transcript_stop = convert_query_to_ref(cigar, read_reversed, pos, read_start, read_stop)
-			if transcript_start > transcript_stop:
-				transcript_start, transcript_stop = transcript_stop, transcript_start
 			read_geneid_transcript_to_positions[(qname, geneid, transcript)].append((read_start, read_stop, transcript_start, transcript_stop))
 
 with open(snakemake.input[1], "r") as input_genome_sam_file, open(snakemake.output[0], "w") as output_file:

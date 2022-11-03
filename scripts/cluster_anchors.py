@@ -15,6 +15,8 @@ with open(snakemake.input[0], "r") as input_AS_file, open(snakemake.output[0], "
 		geneid, transcript, qname, read_start, read_stop, transcript, transcript_start, transcript_stop, chrom, ref_start, ref_stop, AS, direction = line.strip().split()
 		ref_start, ref_stop, AS = int(ref_start), int(ref_stop), int(AS)
 		transcript_start, transcript_stop = int(transcript_start), int(transcript_stop)
+		if ref_start == ref_stop:
+			continue
 		if ref_start > ref_stop:
 			ref_start, ref_stop = ref_stop, ref_start
 		#if this is the same as previous cluster
@@ -31,8 +33,9 @@ with open(snakemake.input[0], "r") as input_AS_file, open(snakemake.output[0], "
 			for read_qname in qname_to_AS:
 				read_AS = qname_to_AS[read_qname]
 				cluster_AS += read_AS
+			read_qnames = ",".join(read_qname for read_qname in qname_to_AS)
 			if cluster_chrom:
-				output_AS_file.write(f"{cluster_geneid}\t{cluster_transcript}:{cluster_transcript_start}-{cluster_transcript_stop}\t{cluster_chrom}:{cluster_start}-{cluster_stop}\t{cluster_AS}\t{cluster_direction}\n")
+				output_AS_file.write(f"{cluster_geneid}\t{cluster_transcript}:{cluster_transcript_start}-{cluster_transcript_stop}\t{cluster_chrom}:{cluster_start}-{cluster_stop}\t{cluster_AS}\t{cluster_direction}\t{read_qnames}\n")
 			#initialize new cluster
 			qname_to_AS = defaultdict(int)
 			cluster_chrom = chrom
@@ -53,5 +56,6 @@ with open(snakemake.input[0], "r") as input_AS_file, open(snakemake.output[0], "
 	for read_qname in qname_to_AS:
 		read_AS = qname_to_AS[read_qname]
 		cluster_AS += read_AS
+	read_qnames = ",".join(read_qname for read_qname in qname_to_AS)
 	if cluster_chrom:
-		output_AS_file.write(f"{cluster_geneid}\t{cluster_transcript}:{cluster_transcript_start}-{cluster_transcript_stop}\t{cluster_chrom}:{cluster_start}-{cluster_stop}\t{cluster_AS}\t{cluster_direction}\n")
+		output_AS_file.write(f"{cluster_geneid}\t{cluster_transcript}:{cluster_transcript_start}-{cluster_transcript_stop}\t{cluster_chrom}:{cluster_start}-{cluster_stop}\t{cluster_AS}\t{cluster_direction}\t{read_qnames}\n")

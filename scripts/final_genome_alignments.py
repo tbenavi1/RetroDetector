@@ -8,7 +8,7 @@ retrogene_locations = []
 
 with open(snakemake.input[0], "r") as input_AS_file:
 	for line in input_AS_file:
-		geneID, transcript_location, anchor_range, direction = line.strip().split()
+		geneID, transcript_location, anchor_range, direction, readnames = line.strip().split()
 		transcript = transcript_location.split(":")[0]
 		chrom, anchor_span = anchor_range.split(":")
 		start, stop = anchor_span.split("-")

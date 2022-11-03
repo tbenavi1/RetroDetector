@@ -22,7 +22,7 @@ num_retrogenes = 0
 with open(snakemake.input[0], "r") as input_file:
 	for line in input_file:
 		num_retrogenes += 1
-		geneid, transcript_location, region, direction = line.strip().split()
+		geneid, transcript_location, region, direction, readnames = line.strip().split()
 		if direction == "forward":
 			option = ""
 		else:

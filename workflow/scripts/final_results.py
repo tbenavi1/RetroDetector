@@ -54,7 +54,9 @@ with gzip.open(snakemake.input[1], "rt") as input_transcriptome_file:
 #			overlapping_geneids.append(geneid)
 #	return overlapping_geneids
 
-with open(snakemake.input[2], "r") as input_clustered_file, open(snakemake.output[0], "w") as output_results_file:
+overlapping_info = []
+chrom_start_stop_to_length_info = {}
+with open(snakemake.input[2], "r") as input_clustered_file:
 	for line in input_clustered_file:
 		geneid, retrogene_transcriptome_location, retrogene_genome_location, strand, readnames = line.strip().split()
 		read_support = len(readnames.split(","))
@@ -96,4 +98,49 @@ with open(snakemake.input[2], "r") as input_clustered_file, open(snakemake.outpu
 		#	overlapping_geneids = ",".join(overlapping_geneids)
 		#else:
 		#	overlapping_geneids = "."
-		output_results_file.write(f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{read_support}\n")
+		info = f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{read_support}\n"
+		chrom, span = retrogene_genome_location.split(":")
+		start, stop = span.split("-")
+		start, stop = int(start), int(stop)
+		if (chrom, start, stop) in chrom_start_stop_to_length_info:
+			previous_length, previous_info = chrom_start_stop_to_length_info[(chrom, start, stop)]
+			if retrogene_length > previous_length:
+				chrom_start_stop_to_length_info[(chrom, start, stop)] = (retrogene_length, info)
+				overlapping_info.append(previous_info)
+			else:
+				overlapping_info.append(info)
+		else:
+			chrom_start_stop_to_length_info[(chrom, start, stop)] = (retrogene_length, info)
+		#output_results_file.write(f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{read_support}\n")
+
+previous_chrom = ""
+with open(snakemake.output[0], "w") as output_results_file, open(snakemake.output[1], "w") as output_duplicate_file:
+	output_duplicate_file.write("The following putative retrogenes overlapped with other retrogenes in the final results file:\n")
+	for info in overlapping_info:
+		output_duplicate_file.write(info)
+	for chrom, start, stop in sorted(chrom_start_stop_to_length_info):
+		length, info = chrom_start_stop_to_length_info[(chrom, start, stop)]
+		#if this overlaps the previous retrogene
+		if chrom == previous_chrom and start <= previous_stop:
+			#if current length is not better
+			if length <= previous_length:
+				output_duplicate_file.write(info)
+			#else current length is better
+			else:
+				output_duplicate_file.write(previous_info)
+				previous_length = length
+				previous_info = info
+			previous_stop = max(previous_stop, stop)
+		#else this does not overlap a previous retrogene
+		else:
+			#write previous retrogene
+			if previous_chrom:
+				output_results_file.write(previous_info)
+			#reset
+			previous_chrom = chrom
+			previous_stop = stop
+			previous_length = length
+			previous_info = info
+	#write final retrogene
+	if previous_chrom:
+		output_results_file.write(previous_info)

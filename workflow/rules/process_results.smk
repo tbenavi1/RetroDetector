@@ -25,6 +25,15 @@ rule final_results:
     "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.diff",
     "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogenes.needles.txt"
   output:
-    "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv"
+    "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv",
+    "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.duplicate.results.tsv"
   script:
     "../scripts/final_results.py"
+
+rule filter_mainchroms:
+  input:
+    "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv"
+  output:
+    "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.mainchrom.results.tsv"
+  script:
+    "../scripts/filter_mainchroms.py"

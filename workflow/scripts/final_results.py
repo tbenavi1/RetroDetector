@@ -4,7 +4,9 @@ from collections import defaultdict
 ref = snakemake.wildcards.ref
 sample = snakemake.wildcards.sample
 
-output_prefix = f"RESULTS/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene."
+junction_total_read_support_threshold = snakemake.config["junction_total_read_support_threshold"]
+
+output_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene."
 output_needle_suffix = ".needle"
 output_consensus_suffix = ".consensus.fasta"
 
@@ -55,18 +57,35 @@ with gzip.open(snakemake.input[1], "rt") as input_transcriptome_file:
 with open(snakemake.input[2], "r") as input_clustered_file, open(snakemake.output[0], "w") as output_results_file:
 	for line in input_clustered_file:
 		geneid, retrogene_transcriptome_location, retrogene_genome_location, strand, readnames = line.strip().split()
+		read_support = len(readnames.split(","))
+		if read_support < junction_total_read_support_threshold:
+			continue
 		transcript = retrogene_transcriptome_location.split(":")[0]
 		transcript_genome_location = transcript_to_genome_location[transcript]
+		output_consensus = output_prefix + geneid + "." + retrogene_genome_location.split(":")[0] + "." + retrogene_genome_location.split(":")[1] + output_consensus_suffix
+		output_needle = output_prefix + geneid + "." + retrogene_genome_location.split(":")[0] + "." + retrogene_genome_location.split(":")[1] + output_needle_suffix
+		if "chroms" in snakemake.config:
+			chrom_to_nicechrom = snakemake.config["chroms"]
+			chrom, span = transcript_genome_location.split(":")
+			if chrom in chrom_to_nicechrom:
+				nicechrom = chrom_to_nicechrom[chrom]
+			else:
+				nicechrom = chrom
+			transcript_genome_location = f"{nicechrom}:{span}"
+			chrom, span = retrogene_genome_location.split(":")
+			if chrom in chrom_to_nicechrom:
+				nicechrom = chrom_to_nicechrom[chrom]
+			else:
+				nicechrom = chrom
+			retrogene_genome_location = f"{nicechrom}:{span}"
 		transcript_length = transcript_to_length[transcript]
-		output_consensus = output_prefix + geneid + output_consensus_suffix
 		with open(output_consensus, "r") as input_consensus_file:
 			retrogene_length = 0
 			for line in input_consensus_file:
 				if not line.startswith(">"):
 					line_length = len(line.strip())
 					retrogene_length += line_length
-		coverage_pct = retrogene_length/transcript_length
-		output_needle = output_prefix + geneid + output_needle_suffix
+		coverage_pct = retrogene_length/transcript_length*100
 		try:
 			with open(output_needle, "r") as input_needle_file:
 				pct_identity = input_needle_file.readlines()[23].split("(")[1].split(")")[0][:-1]
@@ -77,5 +96,4 @@ with open(snakemake.input[2], "r") as input_clustered_file, open(snakemake.outpu
 		#	overlapping_geneids = ",".join(overlapping_geneids)
 		#else:
 		#	overlapping_geneids = "."
-		read_support = len(readnames.split(","))
-		output_results_file.write(f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.2f}\t{pct_identity}\t{read_support}\n")
+		output_results_file.write(f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{read_support}\n")

@@ -255,7 +255,11 @@ def process_unpaired_alignment(readname, flag, transcript, pos, cigar, pnext, tl
 
 def process_alignment(readname, flag, transcript, pos, cigar, pnext, tlen, cigar_next, line):
 	reads_mapped_to_parent_gene = transcript_to_reads_mapped_to_parent_gene[transcript]
-	if readname in reads_mapped_to_parent_gene:
+	if "_" in readname:
+		original_readname = readname.split("_")[0]
+	else:
+		original_readname = readname
+	if original_readname in reads_mapped_to_parent_gene:
 		read_is_mapped_to_parent_gene = True
 	else:
 		read_is_mapped_to_parent_gene = False
@@ -312,8 +316,13 @@ def get_alternate_alignments(line):
 		optional_fields = line.strip().split()[11:]
 		for optional_field in optional_fields:
 			if optional_field.startswith("XA:Z:"):
-				alternate_hits = optional_field.split(":")[2][:-1].split(";")
-				break
+				alternate_hits += optional_field.split(":")[2][:-1].split(";")
+			if optional_field.startswith("SA:Z:"):
+				hits = optional_field.split(":")[2][:-1].split(";")
+				for hit in hits:
+					hit_transcript, hit_pos, hit_strand, hit_cigar = hit.split(",")[:4]
+					alternate_hit = f"{hit_transcript},{hit_strand}{hit_pos},{hit_cigar}"
+					alternate_hits.append(alternate_hit)
 		alternate_transcripts = set()
 		transcript_to_alternate_hits = defaultdict(list)
 		for alternate_hit in alternate_hits:
@@ -353,12 +362,22 @@ def get_alternate_alignments(line):
 		optional_fields2 = line2.strip().split()[11:]
 		for optional_field in optional_fields:
 			if optional_field.startswith("XA:Z:"):
-				alternate_hits = optional_field.split(":")[2][:-1].split(";")
-				break
+				alternate_hits += optional_field.split(":")[2][:-1].split(";")
+			if optional_field.startswith("SA:Z:"):
+				hits = optional_field.split(":")[2][:-1].split(";")
+				for hit in hits:
+					hit_transcript, hit_pos, hit_strand, hit_cigar = hit.split(",")[:4]
+					alternate_hit = f"{hit_transcript},{hit_strand}{hit_pos},{hit_cigar}"
+					alternate_hits.append(alternate_hit)
 		for optional_field2 in optional_fields2:
 			if optional_field2.startswith("XA:Z:"):
-				alternate_hits2 = optional_field2.split(":")[2][:-1].split(";")
-				break
+				alternate_hits2 += optional_field2.split(":")[2][:-1].split(";")
+			if optional_field2.startswith("SA:Z:"):
+				hits = optional_field2.split(":")[2][:-1].split(";")
+				for hit in hits:
+					hit_transcript, hit_pos, hit_strand, hit_cigar = hit.split(",")[:4]
+					alternate_hit2 = f"{hit_transcript},{hit_strand}{hit_pos},{hit_cigar}"
+					alternate_hits2.append(alternate_hit2)
 		alternate_transcripts = set()
 		transcript_to_alternate_hits = defaultdict(list)
 		transcript_to_alternate_hits2 = defaultdict(list)

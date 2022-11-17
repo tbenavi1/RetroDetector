@@ -67,6 +67,7 @@ with open(snakemake.input[2], "r") as input_no_non_overlapping_spannedjunctions_
 	output_file.write(f"no non-overlapping support\tsingly spanned\t{true_positives}\t{false_positives}\t{false_negatives}\n")
 	true_positives = len(no_non_overlapping_multiply_spanned.intersection(long_truepositives))
 	false_positives = len(no_non_overlapping_multiply_spanned - long_truepositives)
+	print(no_non_overlapping_multiply_spanned - long_truepositives)
 	false_negatives = len(long_truepositives - no_non_overlapping_multiply_spanned)
 	output_file.write(f"no non-overlapping support\tmultiply spanned\t{true_positives}\t{false_positives}\t{false_negatives}\n")
 

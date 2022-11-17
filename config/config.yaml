@@ -20,6 +20,19 @@ fastqs:
     pacbio_hifi:
       1: Downloads/SRR10238607.fastq.gz
 
+#If the reference genome has weird chromosome names,
+#you can edit this with a mapping from the weird chromosome names
+#to the nice chromosome names.
+chroms:
+	NC_004354.4: X
+	NT_033779.5: 2L
+	NT_033778.4: 2R
+	NT_037436.4: 3L
+	NT_033777.3: 3R
+	NC_004353.4: 4
+	NC_024512.1: Y
+	NC_024511.2: MT
+
 #Advanced parameters
 
 #A supporting overlapping alignment must extend at least junction_overhang base pairs on both sides of an exon-exon junction
@@ -51,7 +64,7 @@ short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold: 
 
 #For both short and long reads, we require at least junction_total_read_support_threshold supporting reads/read pairs
 #before we say that there is sufficient evidence that a particular exon-exon junction is part of a retrogene
-junction_total_read_support_threshold: 3
+junction_total_read_support_threshold: 20
 
 #For short reads, we additionally require junction_strong_short_read_support_threshold "strong" supporting reads/read pairs
 #Strong short-read support includes an overlapping alignment (that meets overlapping requirements above), 

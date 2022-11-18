@@ -56,13 +56,16 @@ with gzip.open(snakemake.input[1], "rt") as input_transcriptome_file:
 
 overlapping_info = []
 chrom_start_stop_to_length_info = {}
-with open(snakemake.input[2], "r") as input_clustered_file:
+with open(snakemake.input[2], "r") as input_clustered_file, open(snakemake.output[2], "w") as output_lowconfidence_file:
 	for line in input_clustered_file:
 		geneid, retrogene_transcriptome_location, retrogene_genome_location, strand, readnames = line.strip().split()
 		read_support = len(readnames.split(","))
 		if read_support < junction_total_read_support_threshold:
 			continue
-		transcript = retrogene_transcriptome_location.split(":")[0]
+		transcript, retrogene_transcript_span = retrogene_transcriptome_location.split(":")
+		retrogene_transcript_start, retrogene_transcript_stop = retrogene_transcript_span.split("-")
+		retrogene_transcript_start, retrogene_transcript_stop = int(retrogene_transcript_start), int(retrogene_transcript_stop)
+		retrogene_transcript_span = retrogene_transcript_stop - retrogene_transcript_start + 1
 		transcript_genome_location = transcript_to_genome_location[transcript]
 		output_consensus = output_prefix + geneid + "." + retrogene_genome_location.split(":")[0] + "." + retrogene_genome_location.split(":")[1] + output_consensus_suffix
 		output_needle = output_prefix + geneid + "." + retrogene_genome_location.split(":")[0] + "." + retrogene_genome_location.split(":")[1] + output_needle_suffix
@@ -87,10 +90,10 @@ with open(snakemake.input[2], "r") as input_clustered_file:
 				if not line.startswith(">"):
 					line_length = len(line.strip())
 					retrogene_length += line_length
-		coverage_pct = retrogene_length/transcript_length*100
+		coverage_pct = retrogene_transcript_span/transcript_length*100
 		try:
 			with open(output_needle, "r") as input_needle_file:
-				pct_identity = input_needle_file.readlines()[23].split("(")[1].split(")")[0][:-1]
+				pct_identity = float(input_needle_file.readlines()[23].split("(")[1].split(")")[0][:-1])
 		except:
 			pct_identity = "."
 		#overlapping_geneids = get_overlapping_geneids(retrogene_genome_location)
@@ -99,6 +102,9 @@ with open(snakemake.input[2], "r") as input_clustered_file:
 		#else:
 		#	overlapping_geneids = "."
 		info = f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{read_support}\n"
+		if retrogene_length > transcript_length or pct_identity == "." or pct_identity < 50:
+			output_lowconfidence_file.write(info)
+			continue
 		chrom, span = retrogene_genome_location.split(":")
 		start, stop = span.split("-")
 		start, stop = int(start), int(stop)

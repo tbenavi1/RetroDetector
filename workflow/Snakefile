@@ -33,3 +33,4 @@ rule all:
     expand("results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sorted.bam.bai", ref=config["ref"], sample=long_samples),
     expand("results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv", ref=config["ref"], sample=long_samples),
     expand("results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.mainchrom.results.tsv", ref=config["ref"], sample=long_samples),
+    expand("results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.chrommovement.results.tsv", ref=config["ref"], sample=long_samples),

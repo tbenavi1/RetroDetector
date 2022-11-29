@@ -1,15 +1,7 @@
 configfile: "config/config.yaml"
 
-short_samples = []
-for sample in config["fastqs"]:
-  if "short" in config["fastqs"][sample]:
-    short_samples.append(sample)
 
-long_samples = []
-for sample in config["fastqs"]:
-  if "pacbio_hifi" in config["fastqs"][sample] or "pacbio_clr" in config["fastqs"][sample] or "ont" in config["fastqs"][sample]:
-    long_samples.append(sample)
-
+include: "rules/common.smk"
 include: "rules/initial_setup.smk"
 include: "rules/map_reads.smk"
 include: "rules/process_bams.smk"
@@ -17,20 +9,93 @@ include: "rules/find_retrogenes.smk"
 include: "rules/anchor_retrogenes.smk"
 include: "rules/get_supporting_alignments.smk"
 include: "rules/process_results.smk"
-#include: "rules/common.smk"
+
 
 rule all:
-  input:
-    expand("results/BAMS/{ref}/{sample}/transcriptome/short/{ref}.{sample}.transcriptome.short.sorted.bam", ref=config["ref"], sample=short_samples),
-    expand("results/BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam", ref=config["ref"], sample=long_samples),
-    expand("results/BAMS/{ref}/{sample}/genome/short/{ref}.{sample}.genome.short.sorted.bam.bai", ref=config["ref"], sample=short_samples),
-    expand("results/BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam.bai", ref=config["ref"], sample=long_samples),
-    expand("results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv", ref=config["ref"], sample=long_samples),
-    expand("results/AS/{ref}/{sample}/{ref}.{sample}.genome.AS", ref=config["ref"], sample=long_samples),
-    expand("results/AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS", ref=config["ref"], sample=long_samples),
-    expand("results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS", ref=config["ref"], sample=long_samples),
-    expand("results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.diff", ref=config["ref"], sample=long_samples),
-    expand("results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sorted.bam.bai", ref=config["ref"], sample=long_samples),
-    expand("results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv", ref=config["ref"], sample=long_samples),
-    expand("results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.mainchrom.results.tsv", ref=config["ref"], sample=long_samples),
-    expand("results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.chrommovement.results.tsv", ref=config["ref"], sample=long_samples),
+    input:
+        expand(
+            "results/BAMS/{ref}/{sample}/transcriptome/short/{ref}.{sample}.transcriptome.short.sorted.bam",
+            ref=config["ref"],
+            sample=short_samples,
+        ),
+        expand(
+            "results/BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/BAMS/{ref}/{sample}/genome/short/{ref}.{sample}.genome.short.sorted.bam.bai",
+            ref=config["ref"],
+            sample=short_samples,
+        ),
+        expand(
+            "results/BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam.bai",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/AS/{ref}/{sample}/{ref}.{sample}.genome.AS",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.diff",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sorted.bam.bai",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.mainchrom.results.tsv",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.chrommovement.results.tsv",
+            ref=config["ref"],
+            sample=long_samples,
+        ),
+        expand(
+            "results/Spanned/{ref}/{sample}/short/{ref}.{sample}.shortreads.spannedjunctions.tsv",
+            ref=config["ref"],
+            sample=short_samples,
+        ),
+        expand(
+            "results/Summary/{ref}/{sample}/{ref}.{sample}.{strongthreshold}.results.txt",
+        ref=config["ref"],
+        sample=short_samples,
+        strongthreshold=config[
+        "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
+            ],
+        ),
+        expand(
+            "results/Summary/{ref}/{sample}/{ref}.{sample}.{strongthreshold}.results2.txt",
+        ref=config["ref"],
+        sample=short_samples,
+        strongthreshold=config[
+        "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
+            ],
+        ),

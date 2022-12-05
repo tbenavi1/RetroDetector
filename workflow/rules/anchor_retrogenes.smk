@@ -3,10 +3,10 @@
 
 rule analyze_anchors:
     input:
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sorted.sam",
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.transcriptome.long.subset.geneid.sorted.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.long.subset.geneid.sorted.sam",
     output:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.AS",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -17,9 +17,9 @@ rule analyze_anchors:
 
 rule sort_anchors:
     input:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.AS",
     output:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.sorted.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.sorted.AS",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -30,9 +30,9 @@ rule sort_anchors:
 
 rule cluster_anchors:
     input:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.sorted.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.sorted.AS",
     output:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.clustered.AS",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -46,9 +46,9 @@ rule cluster_anchors:
 
 rule sort_clustered_anchors:
     input:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.clustered.AS",
     output:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.sorted.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.clustered.sorted.AS",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -59,9 +59,9 @@ rule sort_clustered_anchors:
 
 rule best_AS:
     input:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.clustered.sorted.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.clustered.sorted.AS",
     output:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -72,11 +72,11 @@ rule best_AS:
 
 rule categorize_AS:
     input:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS",
         "results/Transcriptome/{ref}/{ref}.transcriptome.coords.tsv",
     output:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.diff",
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.same",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS.diff",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS.same",
     conda:
         "../envs/samtools.yaml"
     log:

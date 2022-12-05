@@ -6,10 +6,10 @@ rule find_retrogene_alignments_long:
         junctions="results/Transcriptome/{ref}/{ref}.transcriptome.junctions.tsv",
         bam="results/BAMS/{ref}/{sample}/transcriptome/long/{ref}.{sample}.transcriptome.long.sorted.bam",
     output:
-        spanningalignments="results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam",
-        spanningalignmentstxt="results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.txt",
-        spannedjunctions="results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
-        flankregions="results/Flanks/{ref}/{sample}/long/{ref}.{sample}.longreads.flankregions.tsv",
+        spanningalignments="results/Spanned/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.spanningalignments.sam",
+        spanningalignmentstxt="results/Spanned/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.spanningalignments.txt",
+        spannedjunctions="results/Spanned/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.spannedjunctions.tsv",
+        flankregions="results/Flanks/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.flankregions.tsv",
     params:
         junction_overhang=config["junction_overhang"],
         insertions_threshold=config["insertions_threshold"],
@@ -26,12 +26,12 @@ rule find_retrogene_alignments_long:
 
 rule subset_transcriptome_bam:
     input:
-        "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.tsv",
-        "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.sam",
-        "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spanningalignments.txt",
+        "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.spannedjunctions.tsv",
+        "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.spanningalignments.sam",
+        "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.spanningalignments.txt",
     output:
-        "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.sam",
+        "results/Spanned/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.spannedjunctions.readnames.txt",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.transcriptome.long.subset.sam",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -45,10 +45,10 @@ rule subset_transcriptome_bam:
 
 rule subset_genome_bam:
     input:
-        reads="results/Spanned/{ref}/{sample}/long/{ref}.{sample}.longreads.spannedjunctions.readnames.txt",
+        reads="results/Spanned/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.longreads.spannedjunctions.readnames.txt",
         bam="results/BAMS/{ref}/{sample}/genome/long/{ref}.{sample}.genome.long.sorted.bam",
     output:
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.long.subset.sam",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -63,11 +63,11 @@ rule subset_genome_bam:
 rule add_geneid_to_subset_sams:
     input:
         "results/Transcriptome/{ref}/{ref}.transcriptome.coords.tsv",
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.sam",
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.transcriptome.long.subset.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.long.subset.sam",
     output:
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sam",
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.transcriptome.long.subset.geneid.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.long.subset.geneid.sam",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -81,9 +81,9 @@ rule add_geneid_to_subset_sams:
 
 rule sort_genome_geneid_sam:
     input:
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.long.subset.geneid.sam",
     output:
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.geneid.sorted.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.long.subset.geneid.sorted.sam",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -94,9 +94,9 @@ rule sort_genome_geneid_sam:
 
 rule sort_transcriptome_geneid_sam:
     input:
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.transcriptome.long.subset.geneid.sam",
     output:
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.transcriptome.long.subset.geneid.sorted.sam",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.transcriptome.long.subset.geneid.sorted.sam",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -131,8 +131,8 @@ rule find_shortreads_alignments:
         intronlengths="results/Transcriptome/{ref}/{ref}.transcriptome.intronlengths.tsv",
         overlapping="results/Spanned/{ref}/{sample}/short/{ref}.{sample}.shortreads.overlapping.genes.tsv",
     output:
-        spanningalignments="results/Spanned/{ref}/{sample}/short/{ref}.{sample}.shortreads.spanningalignments.sam",
-        spannedjunctions="results/Spanned/{ref}/{sample}/short/{ref}.{sample}.shortreads.spannedjunctions.tsv",
+        spanningalignments="results/Spanned/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.shortreads.spanningalignments.sam",
+        spannedjunctions="results/Spanned/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.shortreads.spannedjunctions.tsv",
     params:
         junction_overhang=config["junction_overhang"],
         insertions_threshold=config["insertions_threshold"],

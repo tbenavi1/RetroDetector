@@ -1,11 +1,11 @@
 rule final_genome_alignments:
     input:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.diff",
-        "results/Anchor/{ref}/{sample}/{ref}.{sample}.genome.long.subset.sam",
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.AS",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS.diff",
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.long.subset.sam",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.AS",
     output:
         temp(
-            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sam"
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.sam"
         ),
     conda:
         "../envs/samtools.yaml"
@@ -17,10 +17,10 @@ rule final_genome_alignments:
 
 rule bam_final_genome_alignments:
     input:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sam",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.sam",
     output:
         temp(
-            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.bam"
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.bam"
         ),
     threads: 32
     conda:
@@ -33,9 +33,9 @@ rule bam_final_genome_alignments:
 
 rule sort_final_genome_alignments:
     input:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.bam",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.bam",
     output:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sorted.bam",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.sorted.bam",
     threads: 32
     conda:
         "../envs/samtools.yaml"
@@ -47,9 +47,9 @@ rule sort_final_genome_alignments:
 
 rule index_final_genome_alignments:
     input:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sorted.bam",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.sorted.bam",
     output:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sorted.bam.bai",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.sorted.bam.bai",
     threads: 32
     conda:
         "../envs/samtools.yaml"

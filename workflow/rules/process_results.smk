@@ -1,10 +1,10 @@
 rule get_retrogene_consensus_sequences:
     input:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.diff",
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sorted.bam",
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.supportingalignments.genome.sorted.bam.bai",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS.diff",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.sorted.bam",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.sorted.bam.bai",
     output:
-        "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogenes.consensus.txt",
+        "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.consensus.txt",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -15,11 +15,11 @@ rule get_retrogene_consensus_sequences:
 
 rule get_retrogene_needles:
     input:
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.diff",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS.diff",
         "results/Transcriptome/{ref}/{ref}.transcriptome.fna.gz",
-        "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogenes.consensus.txt",
+        "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.consensus.txt",
     output:
-        "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogenes.needles.txt",
+        "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.needles.txt",
     conda:
         "../envs/emboss.yaml"
     log:
@@ -32,12 +32,12 @@ rule final_results:
     input:
         "results/Transcriptome/{ref}/{ref}.transcriptome.coords.tsv",
         "results/Transcriptome/{ref}/{ref}.transcriptome.fna.gz",
-        "results/AS/{ref}/{sample}/{ref}.{sample}.genome.best.AS.diff",
-        "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogenes.needles.txt",
+        "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS.diff",
+        "results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.needles.txt",
     output:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv",
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.duplicate.results.tsv",
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.lowconfidence.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.final.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.duplicate.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.lowconfidence.results.tsv",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -48,9 +48,9 @@ rule final_results:
 
 rule filter_mainchroms:
     input:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.final.results.tsv",
     output:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.mainchrom.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.final.mainchrom.results.tsv",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -61,9 +61,9 @@ rule filter_mainchroms:
 
 rule chrom_movement:
     input:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.mainchrom.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.final.mainchrom.results.tsv",
     output:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.chrommovement.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.chrommovement.results.tsv",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -75,14 +75,14 @@ rule chrom_movement:
 rule summarize_alignments_short:
     input:
         "results/Transcriptome/{ref}/{ref}.transcriptome.junctions.tsv",
-        "results/Spanned/{ref}/{sample}/short/{ref}.{sample}.shortreads.spannedjunctions.tsv",
+        "results/Spanned/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.shortreads.spannedjunctions.tsv",
     output:
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.coverage.across.junctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.numspannedjunctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.no_non_overlapping.coverage.across.junctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.no_non_overlapping.numspannedjunctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.no_alternate.coverage.across.junctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.coverage.across.junctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.no_non_overlapping.coverage.across.junctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.no_non_overlapping.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.no_alternate.coverage.across.junctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -93,9 +93,9 @@ rule summarize_alignments_short:
 
 rule long_truepositives:
     input:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.mainchrom.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.final.mainchrom.results.tsv",
     output:
-        "results/Summary/{ref}/{sample}/long_truepositives.txt",
+        "results/Summary/{ref}/{sample}/junctover{junction_overhang}.insertthresh{insertions_threshold}.long_truepositives.txt",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -106,11 +106,11 @@ rule long_truepositives:
 
 rule long_truepositives2:
     input:
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.final.results.tsv",
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.duplicate.results.tsv",
-        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.retrogenes.lowconfidence.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.final.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.duplicate.results.tsv",
+        "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.lowconfidence.results.tsv",
     output:
-        "results/Summary/{ref}/{sample}/long_truepositives2.txt",
+        "results/Summary/{ref}/{sample}/junctover{junction_overhang}.insertthresh{insertions_threshold}.long_truepositives2.txt",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -121,12 +121,12 @@ rule long_truepositives2:
 
 rule paper_results:
     input:
-        "results/Summary/{ref}/{sample}/long_truepositives.txt",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.numspannedjunctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.no_non_overlapping.numspannedjunctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/junctover{junction_overhang}.insertthresh{insertions_threshold}.long_truepositives.txt",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.no_non_overlapping.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv",
     output:
-        "results/Summary/{ref}/{sample}/{ref}.{sample}.{strongthreshold}.results.txt",
+        "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.results.txt",
     conda:
         "../envs/samtools.yaml"
     log:
@@ -137,12 +137,12 @@ rule paper_results:
 
 rule paper_results2:
     input:
-        "results/Summary/{ref}/{sample}/long_truepositives2.txt",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.numspannedjunctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.no_non_overlapping.numspannedjunctions.tsv",
-        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/junctover{junction_overhang}.insertthresh{insertions_threshold}.long_truepositives2.txt",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.no_non_overlapping.numspannedjunctions.tsv",
+        "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv",
     output:
-        "results/Summary/{ref}/{sample}/{ref}.{sample}.{strongthreshold}.results2.txt",
+        "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.results2.txt",
     conda:
         "../envs/samtools.yaml"
     log:

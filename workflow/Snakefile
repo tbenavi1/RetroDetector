@@ -41,60 +41,84 @@ rule all:
             insertions_threshold=config["insertions_threshold"],
         ),
         expand(
-            "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.AS",
-            ref=config["ref"],
-            sample=long_samples,
-            junction_overhang=config["junction_overhang"],
-            insertions_threshold=config["insertions_threshold"],
+            "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.genome.AS",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
         ),
         expand(
-            "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.clustered.AS",
-            ref=config["ref"],
-            sample=long_samples,
-            junction_overhang=config["junction_overhang"],
-            insertions_threshold=config["insertions_threshold"],
+            "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.genome.clustered.AS",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
         ),
         expand(
-            "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS",
-            ref=config["ref"],
-            sample=long_samples,
-            junction_overhang=config["junction_overhang"],
-            insertions_threshold=config["insertions_threshold"],
+            "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.genome.best.AS",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
         ),
         expand(
-            "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.genome.best.AS.diff",
-            ref=config["ref"],
-            sample=long_samples,
-            junction_overhang=config["junction_overhang"],
-            insertions_threshold=config["insertions_threshold"],
+            "results/AS/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.genome.best.AS.diff",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
         ),
         expand(
-            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.supportingalignments.genome.sorted.bam.bai",
-            ref=config["ref"],
-            sample=long_samples,
-            junction_overhang=config["junction_overhang"],
-            insertions_threshold=config["insertions_threshold"],
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.retrogenes.supportingalignments.genome.sorted.bam.bai",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
         ),
         expand(
-            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.final.results.tsv",
-            ref=config["ref"],
-            sample=long_samples,
-            junction_overhang=config["junction_overhang"],
-            insertions_threshold=config["insertions_threshold"],
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.retrogenes.final.results.tsv",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
         ),
         expand(
-            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.final.mainchrom.results.tsv",
-            ref=config["ref"],
-            sample=long_samples,
-            junction_overhang=config["junction_overhang"],
-            insertions_threshold=config["insertions_threshold"],
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.retrogenes.final.mainchrom.results.tsv",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
         ),
         expand(
-            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.retrogenes.chrommovement.results.tsv",
-            ref=config["ref"],
-            sample=long_samples,
-            junction_overhang=config["junction_overhang"],
-            insertions_threshold=config["insertions_threshold"],
+            "results/retrogenes/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.retrogenes.chrommovement.results.tsv",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
         ),
         expand(
             "results/Spanned/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.shortreads.spannedjunctions.tsv",
@@ -104,22 +128,28 @@ rule all:
             insertions_threshold=config["insertions_threshold"],
         ),
         expand(
-            "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.results.txt",
+            "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.{strongthreshold}.results.txt",
         ref=config["ref"],
         sample=short_samples,
         junction_overhang=config["junction_overhang"],
         insertions_threshold=config["insertions_threshold"],
-        strongthreshold=config[
-        "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
+            strongthreshold=config[
+                "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
             ],
         ),
         expand(
-            "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.{strongthreshold}.results2.txt",
+            "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.{strongthreshold}.results2.txt",
         ref=config["ref"],
         sample=short_samples,
         junction_overhang=config["junction_overhang"],
         insertions_threshold=config["insertions_threshold"],
-        strongthreshold=config[
-        "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
+            strongthreshold=config[
+                "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
             ],
         ),

@@ -88,13 +88,13 @@ rule summarize_alignments_short:
         "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.{strongthreshold}.shortreads.no_alternate.coverage.across.junctions.tsv",
         "results/Summary/{ref}/{sample}/short/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.{strongthreshold}.shortreads.no_alternate.numspannedjunctions.tsv",
     params:
-        short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold=snakemake.config[
+        short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold=config[
             "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
         ],
-        junction_total_read_support_threshold=snakemake.config[
+        junction_total_read_support_threshold=config[
             "junction_total_read_support_threshold"
         ],
-        junction_strong_short_read_support_threshold=snakemake.config[
+        junction_strong_short_read_support_threshold=config[
             "junction_strong_short_read_support_threshold"
         ],
     conda:

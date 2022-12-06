@@ -1,4 +1,4 @@
-junction_total_read_support_threshold = snakemake.config["junction_total_read_support_threshold"]
+junction_total_read_support_threshold = snakemake.params.junction_total_read_support_threshold
 
 previous_geneid = ""
 with open(snakemake.input[0], "r") as input_file, open(snakemake.output[0], "w") as output_file:

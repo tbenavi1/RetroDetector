@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-junction_total_read_support_threshold = snakemake.config["junction_total_read_support_threshold"]
+junction_total_read_support_threshold = snakemake.params.junction_total_read_support_threshold
 
 transcript_junction_to_reads = defaultdict(set)
 with open(snakemake.input[0], "r") as input_spannedjunctions_file:

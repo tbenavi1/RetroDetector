@@ -2,18 +2,21 @@ import subprocess
 
 ref = snakemake.wildcards.ref
 sample = snakemake.wildcards.sample
+junction_overhang = snakemake.wildcards.junction_overhang
+insertions_threshold = snakemake.wildcards.insertions_threshold
+junction_total_read_support_threshold = snakemake.wildcards.junction_total_read_support_threshold
 
 transcriptome = f"results/Transcriptome/{ref}/{ref}.transcriptome.fna.gz"
 
-output_transcript_prefix = f"results/Consensus/{ref}/{sample}/long/{ref}.{sample}."
+output_transcript_prefix = f"results/Consensus/{ref}/{sample}/long/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}."
 output_transcript_suffix = ".transcript.fasta"
 
 subprocess.run(f"mkdir -p results/Consensus/{ref}/{sample}/long", shell=True)
 
-consensus_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene."
+consensus_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.retrogene."
 consensus_suffix = ".consensus.fasta"
 
-output_needle_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene."
+output_needle_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.retrogene."
 output_needle_suffix = ".needle"
 
 output = snakemake.output[0]

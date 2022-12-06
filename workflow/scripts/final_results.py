@@ -4,7 +4,7 @@ from collections import defaultdict
 ref = snakemake.wildcards.ref
 sample = snakemake.wildcards.sample
 
-junction_total_read_support_threshold = snakemake.config["junction_total_read_support_threshold"]
+junction_total_read_support_threshold = snakemake.params.junction_total_read_support_threshold
 
 output_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene."
 output_needle_suffix = ".needle"

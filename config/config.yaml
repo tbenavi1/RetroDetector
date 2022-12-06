@@ -1,19 +1,15 @@
-#Please update this directory to the scripts directory where RetroDetector is installed
-scripts_directory:
-
-#Please update the filenames of the genome fasta file,
-#the genome gtf file, and the transcriptome file
+#Please update the filenames of the gzipped genome
+#fasta file and the gzipped transcriptome fasta file
 ref:
   "ncbi_dmel":
-    genomic_fna: Downloads/ncbi_dmel.genomic.fna.gz
-    genomic_gtf: Downloads/ncbi_dmel.genomic.gtf.gz
-    rna_from_genomic: Downloads/ncbi_dmel.rna_from_genomic.fna.gz
+    genome: Downloads/ncbi_dmel.genome.fna.gz
+    transcriptome: Downloads/ncbi_dmel.transcriptome.fna.gz
 
 #Please update the filenames of any sequencing data you have.
 #Feel free to add as many samples as you want to analyze.
 fastqs:
   "ISO1":
-    short_paired_end:
+    short:
       1:
         1: Downloads/SRR10728584_1.fastq.gz
         2: Downloads/SRR10728584_2.fastq.gz
@@ -24,14 +20,14 @@ fastqs:
 #you can edit this with a mapping from the weird chromosome names
 #to the nice chromosome names.
 chroms:
-  NC_004354.4: X
-  NT_033779.5: 2L
-  NT_033778.4: 2R
-  NT_037436.4: 3L
-  NT_033777.3: 3R
-  NC_004353.4: 4
-  NC_024512.1: Y
-  NC_024511.2: MT
+  NC_004354.4: "X"
+  NT_033779.5: "2L"
+  NT_033778.4: "2R"
+  NT_037436.4: "3L"
+  NT_033777.3: "3R"
+  NC_004353.4: "4"
+  NC_024512.1: "Y"
+  NC_024511.2: "MT"
 
 #Advanced parameters
 
@@ -60,7 +56,7 @@ short_read_spanning_alignment_maximum_transcriptomic_insertion_size: 485
 #then the corresponding expected genomic insertion size would be 400 + 25 + 50 = 475.
 #In order to consider a supporting short-read spanning alignment as "strong" support,
 #we require that the expected genomic insertion size is at least short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold
-short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold: 500
+short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold: 1000
 
 #For both short and long reads, we require at least junction_total_read_support_threshold supporting reads/read pairs
 #before we say that there is sufficient evidence that a particular exon-exon junction is part of a retrogene

@@ -3,10 +3,12 @@ from collections import defaultdict
 
 ref = snakemake.wildcards.ref
 sample = snakemake.wildcards.sample
+junction_overhang = snakemake.wildcards.junction_overhang
+insertions_threshold = snakemake.wildcards.insertions_threshold
 
 junction_total_read_support_threshold = snakemake.params.junction_total_read_support_threshold
 
-output_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.retrogene."
+output_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.retrogene."
 output_needle_suffix = ".needle"
 output_consensus_suffix = ".consensus.fasta"
 

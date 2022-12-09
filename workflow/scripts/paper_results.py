@@ -44,7 +44,7 @@ no_non_overlapping_all_spanned = set()
 no_non_overlapping_singly_spanned = set()
 no_non_overlapping_multiply_spanned = set()
 no_non_overlapping_geneid_to_num_spanned = defaultdict(int)
-with open(snakemake.input[2], "r") as input_no_non_overlapping_spannedjunctions_file, open(snakemake.output[0], "a") as output_file:
+with open(snakemake.input[2], "r") as input_no_non_overlapping_spannedjunctions_file, open(snakemake.output[0], "a") as output_file, open(snakemake.output[1], "w") as output_tp_file, open(snakemake.output[2], "w") as output_fn_file:
 	for line in input_no_non_overlapping_spannedjunctions_file:
 		geneid, transcript, num_junctions, num_spanned_junctions = line.strip().split()
 		num_junctions, num_spanned_junctions = int(num_junctions), int(num_spanned_junctions)
@@ -58,8 +58,12 @@ with open(snakemake.input[2], "r") as input_no_non_overlapping_spannedjunctions_
 		else:
 			no_non_overlapping_singly_spanned.add(geneid)
 	true_positives = len(no_non_overlapping_all_spanned.intersection(long_truepositives))
+	for geneid in no_non_overlapping_all_spanned.intersection(long_truepositives):
+		output_tp_file.write(f"{geneid}\n")
 	false_positives = len(no_non_overlapping_all_spanned - long_truepositives)
 	false_negatives = len(long_truepositives - no_non_overlapping_all_spanned)
+	for geneid in long_truepositives - no_non_overlapping_all_spanned:
+		output_fn_file.write(f"{geneid}\n")
 	output_file.write(f"no non-overlapping support\tsingly or multiply spanned\t{true_positives}\t{false_positives}\t{false_negatives}\n")
 	true_positives = len(no_non_overlapping_singly_spanned.intersection(long_truepositives))
 	#print(no_non_overlapping_singly_spanned.intersection(long_truepositives))

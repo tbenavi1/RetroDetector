@@ -140,25 +140,29 @@ rule all:
                 "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
             ],
         ),
-#        expand(
-#            "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.{strongthreshold}.results2.txt",
-#        ref=config["ref"],
-#        sample=short_samples,
-#        junction_overhang=config["junction_overhang"],
-#        insertions_threshold=config["insertions_threshold"],
-#        junction_total_read_support_threshold=config[
-#        "junction_total_read_support_threshold"
-#            ],
-#            strongthreshold=config[
-#                "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
-#            ],
-
-#        ),
-        expand("results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.{strongthreshold}.densityplots.png",
+        expand(
+            "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.{strongthreshold}.densityplots.png",
         ref=config["ref"],
         sample=long_samples,
         junction_overhang=config["junction_overhang"],
         insertions_threshold=config["insertions_threshold"],
-        junction_total_read_support_threshold=config["junction_total_read_support_threshold"],
-        strongthreshold=config["short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
+            strongthreshold=config[
+                "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
+            ],
+        ),
+        expand(
+            "results/Summary/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.{strongthreshold}.upsetplots.1plus.tiff",
+        ref=config["ref"],
+        sample=long_samples,
+        junction_overhang=config["junction_overhang"],
+        insertions_threshold=config["insertions_threshold"],
+        junction_total_read_support_threshold=config[
+        "junction_total_read_support_threshold"
+            ],
+            strongthreshold=config[
+                "short_read_strong_spanning_alignment_expected_genomic_insertion_size_threshold"
+            ],
         ),

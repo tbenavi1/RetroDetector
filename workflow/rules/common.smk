@@ -12,6 +12,21 @@ for sample in config["fastqs"]:
     ):
         long_samples.append(sample)
 
+short_and_long_samples = []
+for short_sample in short_samples:
+    if short_sample in long_samples:
+        short_and_long_samples.append(short_sample)
+
+refs = config["ref"]
+junction_overhang = config["junction_overhang"]
+max_insertions = config["max_insertions"]
+read_support = config["read_support"]
+strongthreshold = 1000
+short_read_spanning_alignment_minimum_matching_bp = 30
+short_read_spanning_alignment_minimum_transcriptomic_insertion_size = 215
+short_read_spanning_alignment_maximum_transcriptomic_insertion_size = 485
+junction_strong_short_read_support_threshold = 1
+
 
 def get_minimap_preset(wildcards):
     if wildcards.tech == "pacbio_hifi":

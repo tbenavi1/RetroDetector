@@ -4,11 +4,11 @@ from collections import defaultdict
 ref = snakemake.wildcards.ref
 sample = snakemake.wildcards.sample
 junction_overhang = snakemake.wildcards.junction_overhang
-insertions_threshold = snakemake.wildcards.insertions_threshold
+max_insertions = snakemake.wildcards.max_insertions
 
-junction_total_read_support_threshold = snakemake.params.junction_total_read_support_threshold
+read_support = snakemake.params.read_support
 
-output_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{insertions_threshold}.totalsupport{junction_total_read_support_threshold}.retrogene."
+output_prefix = f"results/retrogenes/{ref}/{sample}/long/consensus/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.retrogene."
 output_needle_suffix = ".needle"
 output_consensus_suffix = ".consensus.fasta"
 
@@ -61,8 +61,8 @@ chrom_start_stop_to_length_info = {}
 with open(snakemake.input[2], "r") as input_clustered_file, open(snakemake.output[2], "w") as output_lowconfidence_file:
 	for line in input_clustered_file:
 		geneid, retrogene_transcriptome_location, retrogene_genome_location, strand, readnames = line.strip().split()
-		read_support = len(readnames.split(","))
-		if read_support < junction_total_read_support_threshold:
+		line_read_support = len(readnames.split(","))
+		if line_read_support < read_support:
 			continue
 		transcript, retrogene_transcript_span = retrogene_transcriptome_location.split(":")
 		retrogene_transcript_start, retrogene_transcript_stop = retrogene_transcript_span.split("-")
@@ -103,7 +103,7 @@ with open(snakemake.input[2], "r") as input_clustered_file, open(snakemake.outpu
 		#	overlapping_geneids = ",".join(overlapping_geneids)
 		#else:
 		#	overlapping_geneids = "."
-		info = f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{read_support}\n"
+		info = f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{line_read_support}\n"
 		if retrogene_length > transcript_length or pct_identity == "." or pct_identity < 50:
 			output_lowconfidence_file.write(info)
 			continue
@@ -119,7 +119,7 @@ with open(snakemake.input[2], "r") as input_clustered_file, open(snakemake.outpu
 				overlapping_info.append(info)
 		else:
 			chrom_start_stop_to_length_info[(chrom, start, stop)] = (retrogene_length, info)
-		#output_results_file.write(f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{read_support}\n")
+		#output_results_file.write(f"{geneid}\t{transcript_genome_location}\t{retrogene_genome_location}\t{retrogene_transcriptome_location}\t{strand}\t{retrogene_length}\t{coverage_pct:.1f}\t{pct_identity}\t{line_read_support}\n")
 
 previous_chrom = ""
 with open(snakemake.output[0], "w") as output_results_file, open(snakemake.output[1], "w") as output_duplicate_file:

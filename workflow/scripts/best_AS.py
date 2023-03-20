@@ -1,4 +1,4 @@
-junction_total_read_support_threshold = snakemake.params.junction_total_read_support_threshold
+read_support = snakemake.params.read_support
 
 previous_geneid = ""
 with open(snakemake.input[0], "r") as input_file, open(snakemake.output[0], "w") as output_file:
@@ -12,7 +12,7 @@ with open(snakemake.input[0], "r") as input_file, open(snakemake.output[0], "w")
 		readnames = readnames - geneid_readnames
 		num_reads = len(readnames)
 		#if this cluster has sufficient support
-		if num_reads >= junction_total_read_support_threshold:
+		if num_reads >= read_support:
 			geneid_readnames.update(readnames)
 			readnames = ",".join(readnames)
 			output_file.write(f"{geneid}\t{transcript_location}\t{location}\t{AS}\t{direction}\t{readnames}\n")

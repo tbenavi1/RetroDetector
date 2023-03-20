@@ -98,3 +98,8 @@ rule all:
             ref=refs,
             sample=long_samples,
         ),
+        expand(
+            f"results/retrogenes/{{ref}}/{{sample}}/long/novel/{{ref}}.{{sample}}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.novel",
+            ref=refs,
+            sample=long_samples,
+        ),

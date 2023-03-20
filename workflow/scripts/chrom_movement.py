@@ -8,15 +8,26 @@ with open(snakemake.input[0], "r") as input_file:
 		parent_location, retro_location = line.strip().split()[1:3]
 		parent_chrom = parent_location.split(":")[0]
 		retro_chrom = retro_location.split(":")[0]
-		total += 1
-		if parent_chrom != "X" and retro_chrom != "X":
-			a_to_a += 1
-		elif parent_chrom != "X":
-			a_to_x += 1
-		elif retro_chrom != "X":
-			x_to_a += 1
-		else:
-			x_to_x += 1
+		#2L=2R, 3L=3R
+		if parent_chrom == "2L" or parent_chrom == "2R":
+			parent_chrom = "2"
+		if parent_chrom == "3L" or parent_chrom == "3R":
+			parent_chrom = "3"
+		if retro_chrom == "2L" or retro_chrom == "2R":
+			retro_chrom = "2"
+		if retro_chrom == "3L" or retro_chrom == "3R":
+			retro_chrom = "3"
+		#The out of X papers only consider retrocopies between chromosomes
+		if parent_chrom != retro_chrom:
+			total += 1
+			if parent_chrom != "X" and retro_chrom != "X":
+				a_to_a += 1
+			elif parent_chrom != "X":
+				a_to_x += 1
+			elif retro_chrom != "X":
+				x_to_a += 1
+			else:
+				x_to_x += 1
 
 a_to_a_pct = a_to_a/total*100
 a_to_x_pct = a_to_x/total*100

@@ -42,7 +42,11 @@ Now, you can activate the snakemake environment using:
 
    conda activate snakemake
 
-Next, you will need to install `BWA <https://github.com/lh3/bwa>`_ and `minimap2 <https://github.com/lh3/minimap2>`_ in order to align the sequencing reads to the reference files. Full instructions can be found in the corresponding GitHub pages. To summarize, run the following commands in the folder where you normally install software:
+In terms of dependencies, RetroDetector requires Snakemake, BWA, minimap2, Samtools, and EMBOSS. To keep things simple, you can run RetroDetector with the "--use-conda" flag and Snakemake will automatically set up the Conda environments with these dependencies. The dependencies will be installed into the current working directory without requiring any administrative privileges. 
+
+If you are able to run RetroDetector with the "--use-conda" flag, then you may return to :doc:`start` to continue with setting up RetroDetector for your project.
+
+Otherwise you will need to install the dependencies manually. First you will need to install `BWA <https://github.com/lh3/bwa>`_ and `minimap2 <https://github.com/lh3/minimap2>`_ in order to align the sequencing reads to the reference files. Full instructions can be found in the corresponding GitHub pages. To summarize, run the following commands in the folder where you normally install software:
 
 .. code-block:: console
 
@@ -62,7 +66,7 @@ Then, make sure to add the paths to BWA and minimap2 to your $PATH environment v
    export PATH=/user/software/minimap2:$PATH
    export PATH=/user/software/bwa:$PATH
 
-Next, you will need to install SAMtools. Please follow the instructions `here <http://www.htslib.org/download/>`_ to download and install the latest version of SAMtools and HTSlib. HTSlib is required in order to use bgzip. For example, if your software directory is /user/software, you could run the following (for SAMtools 1.15.1):
+Next, you will need to install Samtools. RetroDetector requires the Samtools consensus command, which was Please follow the instructions `here <http://www.htslib.org/download/>`_ to download and install the latest version of SAMtools and HTSlib. HTSlib is required in order to use bgzip. For example, if your software directory is /user/software, you could run the following (for SAMtools 1.15.1):
 
 .. code-block:: console
 

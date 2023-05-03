@@ -9,6 +9,7 @@ include: "rules/find_retrogenes.smk"
 include: "rules/anchor_retrogenes.smk"
 include: "rules/get_supporting_alignments.smk"
 include: "rules/process_results.smk"
+include: "rules/final_outputs.smk"
 
 
 rule all:
@@ -58,11 +59,11 @@ rule all:
             ref=refs,
             sample=long_samples,
         ),
-        expand(
-            f"results/retrogenes/{{ref}}/{{sample}}/long/{{ref}}.{{sample}}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.retrogenes.supportingalignments.genome.sorted.bam.bai",
-            ref=refs,
-            sample=long_samples,
-        ),
+        #expand(
+        #    f"results/retrogenes/{{ref}}/{{sample}}/long/{{ref}}.{{sample}}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.retrogenes.supportingalignments.genome.sorted.bam.bai",
+        #    ref=refs,
+        #    sample=long_samples,
+        #),
         expand(
             f"results/retrogenes/{{ref}}/{{sample}}/long/{{ref}}.{{sample}}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.retrogenes.final.results.tsv",
             ref=refs,
@@ -91,15 +92,45 @@ rule all:
         expand(
             f"results/Summary/{{ref}}/{{sample}}/{{ref}}.{{sample}}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.{strongthreshold}.densityplots.png",
             ref=refs,
-            sample=long_samples,
+            sample=short_and_long_samples,
         ),
         expand(
             f"results/Summary/{{ref}}/{{sample}}/{{ref}}.{{sample}}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.{strongthreshold}.upsetplots.1plus.tiff",
             ref=refs,
-            sample=long_samples,
+            sample=short_and_long_samples,
         ),
         expand(
             f"results/retrogenes/{{ref}}/{{sample}}/long/novel/{{ref}}.{{sample}}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.novel",
             ref=refs,
             sample=long_samples,
         ),
+        expand(
+            "results/final_outputs/{ref}/{sample}/{sample}.longread.supportingalignments.genome.bam.bai",
+            ref=refs,
+            sample=long_samples,
+        ),
+        expand(
+            "results/final_outputs/{ref}/{sample}/{sample}.longread.supportingalignments.transcriptome.bam.bai",
+            ref=refs,
+            sample=long_samples,
+        ),
+        expand(
+            "results/final_outputs/{ref}/{sample}/{sample}.shortread.supportingalignments.transcriptome.bam.bai",
+            ref=refs,
+            sample=short_samples,
+        ),
+        expand(
+            "results/final_outputs/{ref}/{sample}/{sample}.retrogene_consensus_sequences.fa",
+            ref=refs,
+            sample=long_samples,
+        ),
+        #expand(
+        #    "results/final_outputs/{ref}/{sample}/{sample}.longread.retrogene_final_output.tsv",
+        #    ref=refs,
+        #    sample=long_samples,
+        #),
+        #expand(
+        #    "results/final_outputs/{ref}/{sample}/{sample}.shortread.retrogene_final_output.tsv",
+        #    ref=refs,
+        #    sample=short_samples,
+        #),

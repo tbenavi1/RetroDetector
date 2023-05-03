@@ -47,6 +47,20 @@ rule merge_bam_transcriptome_short:
         "samtools merge -@ {threads} -o {output} {input}"
 
 
+rule index_bam_transcriptome_short:
+    input:
+        "results/BAMS/{ref}/{sample}/transcriptome/short/{ref}.{sample}.transcriptome.short.sorted.bam",
+    output:
+        "results/BAMS/{ref}/{sample}/transcriptome/short/{ref}.{sample}.transcriptome.short.sorted.bam.bai",
+    threads: 32
+    conda:
+        "../envs/samtools.yaml"
+    log:
+        "logs/index_bam_transcriptome_short/{ref}.{sample}.log",
+    shell:
+        "samtools index -@ {threads} {input}"
+
+
 # sort and merge transcriptome bams for real long reads
 
 

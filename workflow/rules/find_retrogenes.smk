@@ -42,6 +42,47 @@ rule subset_transcriptome_bam:
         "../scripts/subset_transcriptome_bam.py"
 
 
+rule bam_subset_transcriptome_bam:
+    input:
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.transcriptome.long.subset.sam",
+    output:
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.transcriptome.long.subset.bam",
+    conda:
+        "../envs/samtools.yaml"
+    log:
+        "logs/bam_subset_transcriptome_bam/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.log",
+    shell:
+        "samtools view -F 4 -@ {threads} -b -o {output} {input}"
+
+
+rule sort_subset_transcriptome_bam:
+    input:
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.transcriptome.long.subset.bam",
+    output:
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.transcriptome.long.subset.sorted.bam",
+    threads: 32
+    conda:
+        "../envs/samtools.yaml"
+    log:
+        "logs/sort_subset_transcriptome_bam/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.log",
+    shell:
+        "samtools sort -@ {threads} -o {output} {input}"
+
+
+rule index_subset_transcriptome_bam:
+    input:
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.transcriptome.long.subset.sorted.bam",
+    output:
+        "results/Anchor/{ref}/{sample}/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.transcriptome.long.subset.sorted.bam.bai",
+    threads: 32
+    conda:
+        "../envs/samtools.yaml"
+    log:
+        "logs/index_subset_transcriptome_bam/{ref}.{sample}.junctover{junction_overhang}.insertthresh{max_insertions}.totalsupport{read_support}.log",
+    shell:
+        "samtools index -@ {threads} {input}"
+
+
 # Only include genome alignments that have read names corresponding to the transcriptome alignments above
 
 
